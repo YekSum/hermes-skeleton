@@ -1,0 +1,32 @@
+# Credentials — NEVER commit these. The template (.env.template) is the shipped form.
+.env
+.env.EXAMPLE
+*.env
+!*.env.template
+
+# Python build artifacts
+__pycache__/
+*.py[cod]
+
+# Profile exports / backups
+*.tar.gz
+profile-exports/
+backups/
+
+# Private context that must never enter this repo
+memories/
+sessions/
+workspace/
+plans/
+home/
+cache/
+local/
+auth.json
+pairing/
+platforms/
+
+# Editor / OS noise
+.DS_Store
+*.swp
+.idea/
+.vscode/

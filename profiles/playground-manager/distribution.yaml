@@ -1,0 +1,13 @@
+# Profile distribution manifest — lets this profile be installed on its own:
+#   hermes profile install <path-or-git-url>/profiles/playground-manager
+# Recipients keep their own memories, sessions and API keys; only the agent
+# definition travels. See the repo README.
+name: playground-manager
+version: 1.0.0
+description: >-
+  Bounded experiments in an isolated sandbox. Records hypotheses, costs and artifacts; cannot promote without approval.
+# Credentials the recipient must supply (names only, never values). The installer
+# renders these into .env.EXAMPLE from this list.
+env_requires:
+  - name: OPENROUTER_API_KEY
+    description: "Model provider key (or swap the profile's model to another provider)."

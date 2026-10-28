@@ -1,0 +1,102 @@
+# ecosystem-map.checks.yaml — STARTER TEMPLATE
+#
+# Mechanical verification of the claims in ecosystem-map.md.
+# Each entry pairs a CLAIM (what the map asserts) with the COMMAND that proves it.
+# The command's trimmed stdout must match one of `expect` — any match is a PASS.
+#
+# Run:  python3 map/scripts/map_check.py --verbose   # humans
+#       python3 map/scripts/map_check.py             # drift only (monitor-safe)
+#
+# ---------------------------------------------------------------------------
+# RULES THAT KEEP THIS USABLE (each learned the hard way):
+#
+# 1. ALWAYS scope `hermes` CLI calls with `-p <profile>`.
+#    `hermes config get X` resolves the profile from $HERMES_HOME, so an unscoped
+#    call reads whichever profile the shell is in. Run the checker from another
+#    profile's context (e.g. an auditor profile, as a scheduled job does) and
+#    unscoped calls produce PHANTOM DRIFT on a healthy system.
+#
+# 2. Keep commands portable to /bin/sh — the checker runs them via shell=True.
+#    Prefer `grep -cE '^  [a-f0-9]{12}'` over backslash-escaped braces: inside a
+#    YAML double-quoted string `\{12\}` can survive as `\\{12\\}` and silently
+#    match nothing (a check that always "fails" for the wrong reason).
+#
+# 3. Beware nested quoting. For a command containing quotes, use a YAML
+#    SINGLE-quoted scalar so backslashes stay literal:
+#        check: 'python3 -c "print(1)"'
+#
+# 4. A DRIFT can mean the CHECK is wrong, not the system. When one fires,
+#    investigate which side is wrong and say so. Three separate times in the
+#    source build, the check itself was the bug.
+#
+# 5. Expect nothing to be printed when healthy. Output is deterministic and
+#    ordered, so an unchanged system yields byte-identical output — that is what
+#    makes this safe as a cron `monitor` gate (no model run unless it changed).
+#
+# 6. This is a REGRESSION TEST, not an auditor. It only tests claims you encoded,
+#    so it can never discover an omission. Green means "nothing we thought to
+#    check has changed" — never "the map is true".
+# ---------------------------------------------------------------------------
+
+version: 1
+
+checks:
+  # ── worked example: profiles exist ────────────────────────────────────────
+  # Add one of these per profile. Adjust the home path if yours differs.
+  - id: profile.project-manager
+    claim: "project-manager profile exists"
+    check: "test -f \"$HERMES_HOME/profiles/project-manager/config.yaml\" && echo ok"
+    expect: ["ok"]
+
+  # ── worked example: a profile's model is what the map says ────────────────
+  - id: model.project-manager
+    claim: "project-manager model matches the map"
+    check: "hermes -p project-manager config get model.default"
+    expect: ["<model-id-from-your-map>"]
+
+  # ── worked example: a service is enabled AND actually running ─────────────
+  # is-enabled != is-active: an enabled-but-crashed unit passes the first.
+  - id: service.gateway.enabled
+    claim: "gateway service enabled"
+    check: "systemctl --user is-enabled hermes-gateway.service 2>/dev/null"
+    expect: ["enabled"]
+  - id: service.gateway.active
+    claim: "gateway service actually running"
+    check: "systemctl --user is-active hermes-gateway.service 2>/dev/null"
+    expect: ["active"]
+
+  # ── worked example: a port is listening ───────────────────────────────────
+  - id: port.serve
+    claim: "the desktop backend port is listening"
+    check: "ss -ltn 2>/dev/null | grep -q ':9119' && echo listening"
+    expect: ["listening"]
+
+  # ── worked example: delegation is wired to the expected routes ────────────
+  - id: delegation.backend
+    claim: "delegation.backend = profile_routes"
+    check: "hermes -p default config get delegation.backend"
+    expect: ["profile_routes"]
+  # Count alone does not prove WHICH profiles are routed:
+  - id: delegation.routes.names
+    claim: "routes are the expected specialists"
+    check: 'for p in project-manager reporting-agent; do hermes -p default config get delegation.backends.profile_routes.profiles 2>/dev/null | grep -q "$p" && printf x; done | wc -c'
+    expect: ["2"]
+
+  # ── worked example: credentials PRESENT (key names only, never values) ────
+  - id: env.openrouter.present
+    claim: "OPENROUTER_API_KEY present in the default profile"
+    check: "grep -c '^OPENROUTER_API_KEY=' \"$HERMES_HOME/.env\" 2>/dev/null"
+    expect: ["1"]
+
+  # ── self-consistency: the map's advertised count matches this file ────────
+  # Catches the map going stale about its own tooling. Update both together.
+  - id: meta.checks.count
+    claim: "the map's advertised check count matches this file"
+    check: 'n=$(grep -c "^  - id:" "$HERMES_HOME/ecosystem-map.checks.yaml"); m=$(grep -oE "[0-9]+ no-LLM checks" "$HERMES_HOME/ecosystem-map.md" | head -1 | grep -oE "^[0-9]+"); [ "$n" = "$m" ] && echo "consistent:$n"'
+    expect: ["consistent:9"]
+
+  # ── TODO: add checks for the claims that matter on YOUR machine ───────────
+  # Good candidates: service liveness, docker containers, scheduled-job count,
+  # plugin enablement, dashboard auth, and anything a past incident got wrong.
+  # Whenever a real drift is found by a human or a model, ENCODE IT HERE so the
+  # checker catches it next time.

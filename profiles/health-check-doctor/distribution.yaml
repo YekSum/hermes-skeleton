@@ -1,0 +1,13 @@
+# Profile distribution manifest — lets this profile be installed on its own:
+#   hermes profile install <path-or-git-url>/profiles/health-check-doctor
+# Recipients keep their own memories, sessions and API keys; only the agent
+# definition travels. See the repo README.
+name: health-check-doctor
+version: 1.0.0
+description: >-
+  Read-only diagnostics and audits of the Hermes setup, config and deployment.
+# Credentials the recipient must supply (names only, never values). The installer
+# renders these into .env.EXAMPLE from this list.
+env_requires:
+  - name: OPENROUTER_API_KEY
+    description: "Model provider key (or swap the profile's model to another provider)."
