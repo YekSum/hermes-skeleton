@@ -5,6 +5,12 @@ and feeds RP-008.
 **Platform:** **Ubuntu / WSL first.** macOS is explicitly out of scope until the Linux path is boring;
 the installer must *say so and stop*, not half-work.
 
+The platform is **detected, not asked**: `uname -s` plus `grep -qi microsoft /proc/version` separates
+native Linux, WSL-on-Windows and macOS before the first question, and the guide confirms it in the same
+breath ("I can see you're on WSL — right?"). WSL is the only platform where the desktop surfaces exist,
+so it is worth naming explicitly. Pure Windows is not a target: the harness is bash + systemd + POSIX
+paths, and those are not opinions the skeleton can compromise on.
+
 ---
 
 ## The one problem that decides the whole shape

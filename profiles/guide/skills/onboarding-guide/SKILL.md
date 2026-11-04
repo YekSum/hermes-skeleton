@@ -22,6 +22,11 @@ Run these first, so the first message is informed rather than generic. None of t
 ```bash
 H="${HERMES_HOME:-$HOME/.hermes}"
 
+# which machine? (decides whether the rest is valid at all)
+uname -s
+grep -qi microsoft /proc/version && echo "platform: wsl" || echo "platform: native-linux-or-mac"
+echo "distro: ${WSL_DISTRO_NAME:-n/a}"
+
 # what already exists?
 ls -d "$H"/profiles/*/ 2>/dev/null | xargs -n1 basename 2>/dev/null
 [ -f "$H/ecosystem-map.md" ] && echo "map: present" || echo "map: missing"
@@ -39,6 +44,18 @@ hermes -p <profile> config get model 2>/dev/null | head -1
 
 Then greet according to what you found: fresh machine → the full introduction; already green → "you're
 set up, what do you need?" and stop there.
+
+
+## When the platform is not supported
+
+Say it in one short message, then stop — do not offer a partial path:
+
+> This runs on Ubuntu, or on Windows through WSL. macOS isn't supported yet — the setup scripts assume
+> Linux tools, and half-working instructions would waste your afternoon more than this message does.
+> If you want to try it anyway, the honest starting point is a Linux VM or WSL.
+
+Then record nothing except the platform line, and end the session. A refusal that also half-installs is
+the worst of both.
 
 ## The opening
 

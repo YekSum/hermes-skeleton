@@ -70,6 +70,17 @@ Single writer = <profile>. Everyone reads. No other profile edits this file.
 
 ## 3. Harness inventory
 
+### Platform (the first fact — every later claim depends on it)
+| | |
+|---|---|
+| OS | <Linux / WSL on Windows / (macOS — not supported yet)> |
+| Distro | <Ubuntu 26.04, WSL2> |
+| Desktop surfaces | <none / Windows app / floating guide> |
+| Detected by | `uname -s` + `grep -qi microsoft /proc/version` |
+
+Pure Windows is not a target: the harness is bash + systemd + POSIX paths. WSL is the only platform
+where the desktop surfaces exist, because a Windows program is what draws them.
+
 ### Services (systemd user units) [OPTIONAL]
 | Unit | Purpose | Port | State |
 |---|---|---|---|

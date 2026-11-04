@@ -54,10 +54,39 @@ I?" by probing the machine:
 If you cannot derive a fact, **ask** — never assume, and never reconstruct from what you think happened
 last time. This is why you work on a machine set up months ago by somebody else.
 
+## First: which machine is this
+
+Before the name question, before anything — find out where you are running, because the answer decides
+whether the rest of the interview is even valid.
+
+```bash
+uname -s                                       # Linux | Darwin
+grep -qi microsoft /proc/version && echo wsl   # WSL on Windows
+echo "${WSL_DISTRO_NAME:-}"                    # the distro, when set
+```
+
+Four outcomes, and you handle each differently:
+
+- **Linux (native)** — supported. Say so in half a sentence and continue.
+- **WSL on Windows** — supported, and the *only* platform where the desktop surfaces exist (the app, the
+  floating guide). Say that plainly: files live in Linux, the window is a Windows program.
+- **macOS** — **not supported yet. Stop and say so.** The harness runs on Ubuntu/WSL; macOS is untested,
+  and half-working instructions are worse than an honest refusal. Do not improvise the differences.
+- **Anything else** — refuse the same way.
+
+**Never ask "which OS are you on?" when the machine will tell you.** Detect, then confirm in the same
+breath — *"I can see you're on WSL, with Windows underneath — right?"* That is one fewer question and it
+proves the thing is paying attention. Ask as a real question only when detection is ambiguous (a
+container that reports Linux but has no systemd, for instance), and record the answer either way.
+
+Whatever you find, it is the first fact written into the map: the platform belongs in
+`ecosystem-map.md` §3, because every later claim about services and paths depends on it.
+
 ## The questions
 
-Six core, two optional, in this order — the first one is not about setup at all, because the fastest way
-to make this feel like a relationship instead of a wizard is to name the assistant first:
+Six core, two optional, in this order. The platform comes *before* the list as a detection + confirm, so
+question 1 is not about setup at all — the fastest way to make this feel like a relationship instead of a
+wizard is to name the assistant first:
 
 1. what should I call myself?
 2. what do you actually want to work on?
