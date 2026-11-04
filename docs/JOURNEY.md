@@ -17,6 +17,30 @@ That is why stage 1 is a shell/python step and stage 2 is the chat. Everything e
 
 ---
 
+## How the assistant speaks first
+
+A model never speaks unbidden — it answers. But the *user* does not have to type first, because the
+launcher can send the opening turn on their behalf:
+
+```bash
+hermes -p onboarding chat -q "hi"          # seeds the interactive session, then stays interactive
+```
+
+`-q` on a real TTY submits the text as the first turn and drops into the normal interactive session.
+So the sequence the user experiences is: run one command → the assistant greets them and asks its first
+question → they reply. The single `hi` in the transcript is the cost of not needing a custom TUI.
+
+Design notes:
+
+- **Seed the shortest possible token** (`hi`, or `BEGIN_SETUP` if you prefer it machine-readable). The
+  profile's SOUL recognises it and opens with the introduction. A long seed prompt would appear in the
+  transcript and read like the user was told what to ask.
+- **The profile must exist before the launcher runs.** Stage 1 creates it (`hermes profile create
+  onboarding`, copy the SOUL into place) — the installer installs the interviewer. That is also why the
+  interview can use a model the user just configured: same `.env`, same `config.yaml`.
+- **Never a custom TUI for this.** A launcher that prints its own greeting and then hands over produces
+  two voices in one session; let the agent own the conversation.
+
 ## Stage 0 — prerequisites (README, copy-paste only)
 
 Two things must already be true, and the README says them in two lines:
@@ -41,6 +65,8 @@ Then it:
 - writes `.env` for the profiles that need it (names only in the repo; values only here),
 - **verifies the key with one live call** — a failure is a clear message, not a stack trace,
 - writes the chosen model into `config.yaml` for the default profile,
+- **creates the onboarding profile itself** (`hermes profile create onboarding` + its SOUL), so the
+  next command has something to talk to,
 - prints exactly one thing on success: `✓ model reachable — starting the interview`.
 
 Design rules for this stage:
@@ -62,6 +88,10 @@ introduces itself, and the order of the conversation matters more than the wordi
    there are several, what the board is for, how memory works (standing orders in `MEMORY.md`, facts
    in the map, a short brief generated at every session start). Two short paragraphs — no jargon dump.
    A user who does not understand the shape cannot answer questions about it.
+   The introduction must name **delegation** explicitly, because it is the part people do not expect:
+   work is routed to a specialist profile that has its own model, its own credentials and its own
+   sandbox, and every delegation leaves a transcript. That is the difference between "one assistant"
+   and "a team with an audit trail" — and it is invisible until someone explains it.
 3. **Intent.** "What do you actually want to work on?" — free text, no options. This is where their
    preferences start forming, and it is what later writes into `USER.md`.
 4. **Scope**, as a small set of concrete choices derived from the answer, not a menu of everything:
@@ -105,22 +135,34 @@ Setup is not finished until one loop has been run end to end. Three small tasks,
 
 Ten minutes. Without this the mechanisms are theory, and the second session starts from zero.
 
-## Stage 5 — optional: the desktop app
+## Stage 5 — optional: where do you talk to it?
 
-**Here, at the end, and optional.** Reasons:
+The harness works in a terminal. Everything here is an add-on, offered once, at the end, skippable —
+and **run from a script, never from the chat**, because both surfaces need a credential.
 
-- It is a **client**, not part of the harness. The ecosystem is fully working and verifiable without it.
-- It adds failure surface — a serve service, a session token, and on WSL a Windows-side install. That
-  is a bad thing to put in front of someone who has not yet seen anything work.
-- It gives the journey a satisfying finish: *"now open the app and say hello"*.
+**5a. Messaging (Telegram, Discord, WhatsApp…).** The best fit for most people: the assistant reaches
+them where they already are, and the desktop becomes unnecessary.
 
-The README entry is one line, marked optional, with the honest caveat that on WSL the app installs on
-the Windows side.
+- The token is created *outside* — BotFather for Telegram, a developer app for Discord. The script
+  prints the three steps with links and waits.
+- ⚠️ **The token must never be typed into the chat.** Session transcripts are stored; a token pasted
+  into a conversation is a credential in a database. The script reads it with hidden input, writes it
+  to the profile `.env`, and never prints it back.
+- **Ask who is allowed to talk to the bot** (allowed users / channels) before enabling it. A bot with
+  open access is a remote control for the machine.
+- Verify, do not assume: send one message from the allowed account, receive one reply, then report the
+  result. Then note that the gateway multiplexes profiles, so one bot can serve several.
 
-**The case for moving it earlier** — offered to the interview as an alternative surface — is real but
-weak: a GUI is nicer for a non-technical user *during* the interview, but it doubles the places a first
-run can fail before the user has any evidence the thing works. If it does move, it belongs between
-stage 1 and stage 2, never inside stage 1.
+**5b. The desktop app.** Last, and genuinely optional.
+
+- It is a **client**, not part of the harness — the ecosystem is verified and working without it.
+- It adds failure surface: a serve service, a session token, and on WSL a Windows-side install. That is
+  a bad thing to put in front of someone who has not yet seen anything work.
+- It gives the journey a finish: *"setup is done and verified — open the app and say hello."*
+
+**If you move the desktop earlier** — offered as the interview's own surface — it goes between stages 1
+and 2, never inside stage 1, and you accept a doubled first-run failure rate in exchange for a nicer
+conversation.
 
 ---
 
@@ -134,6 +176,12 @@ stage 1 and stage 2, never inside stage 1.
   refusals.
 - **How is the interview shipped?** A prompt + a skill, a small CLI wrapper, or a profile-level
   distribution? (This is the HA-018 vs HA-021 decision — pick one, not both.)
+- **Which messaging platform is the default recommendation?** Telegram is the cheapest to set up
+  (BotFather, one token, no app review); Discord needs a developer app; WhatsApp needs a business
+  account. Pick one to lead with and mention the others.
+- **Does the onboarding profile persist after setup?** It costs a profile home and a slot in the routing
+  table, and its job is over. Either document it as "delete when done" or give it a second duty
+  (re-running setup on a new machine).
 - **macOS:** what is the minimum honest gate? `uname` check and a README sentence is probably enough
   until the Linux path has been run by someone who is not its author.
 - **What does the interview do on a machine that already has a harness?** Refuse by default; re-run in

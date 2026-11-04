@@ -35,6 +35,11 @@ Standing procedures for a multi-profile Hermes setup: one orchestrator profile p
 - To update, delegate to the owning profile with exact row/section edits and a one-line confirmation request. **Verify with a grep/read afterwards** — reports are usually trustworthy but writes must be confirmed.
 - Board conventions that keep it usable: fixed sections; every item a table row (`ID | Task | Owner | Status | Priority | Created | Last Updated | Notes`); stable IDs that persist across edits; blockers state what blocks *and* what unblocks; deferred items say `deferred: <reason>`; **Created is set once and preserved on status moves**; regenerate the HTML companion on every change.
 - Mark experimental work with a prefix (e.g. `[experiment]`) rather than giving it its own section — an experiment can also belong to a project, so a separate section fragments items.
+- **A cluster of rows pointing at one product needs a design artifact before an implementation row.**
+  When several items converge (a builder, an onboarding profile, a packaged product), the flow they
+  all assume — what the user does first, what happens when a step fails, where it ends — is nobody's
+  item. Split it out as a spec that the implementation rows depend on, or two rows invent two
+  different journeys and the product ships with whichever was coded last.
 - When rendering a board for a terminal, use a unicode box table; raw markdown pipe-tables render as vertical text in a CLI and inside chat clients that don't render tables. For chat clients that DO render code blocks monospace, a unicode table inside a fenced code block aligns correctly.
 
 ## Session brief — generated orientation, and the inbox that keeps it true
