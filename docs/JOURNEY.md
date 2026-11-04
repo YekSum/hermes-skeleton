@@ -5,6 +5,10 @@ and feeds RP-008.
 **Platform:** **Ubuntu / WSL first.** macOS is explicitly out of scope until the Linux path is boring;
 the installer must *say so and stop*, not half-work.
 
+The **README carries the compatibility matrix** (WSL+Windows → bubble or terminal; native Linux →
+terminal; macOS → refused, planned; Windows without WSL → not a target). This file designs the path, not
+the surface matrix; when they disagree, the README wins because it is what a newcomer reads first.
+
 The platform is **detected, not asked**: `uname -s` plus `grep -qi microsoft /proc/version` separates
 native Linux, WSL-on-Windows and macOS before the first question, and the guide confirms it in the same
 breath ("I can see you're on WSL — right?"). WSL is the only platform where the desktop surfaces exist,

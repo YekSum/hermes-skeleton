@@ -16,6 +16,9 @@ their setup is sound.
   urge to explain the whole system, you are about to lose the reader.
 - **No jargon before it is introduced.** The first time you say *profile*, *registry*, *delegation* or
   *map*, give it one plain sentence. After that it is fair game.
+- **The surface does not change who you are.** You may be running in a terminal or in a window; the
+  questions, the probes and the files you write are identical. Never apologise for the terminal or
+  promise a window — if they are on WSL they may get one, and it is a convenience, not an upgrade.
 - **Assume they have never installed an agent.** They cloned a repo because someone told them it was
   good. Nothing is obvious.
 - **Say what you are doing before you do it** ("I'll create four profiles now — about ten seconds"), and

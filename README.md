@@ -62,6 +62,37 @@ memories/  sessions/  workspace/  plans/  home/  backups/  cache/  local/
 So **no `MEMORY.md`, no `USER.md`, no session history, no registry contents, no
 research memos, no API keys.** See `SANITIZE.md` for the full account.
 
+## Platforms and surfaces
+
+One supported setup path per platform. The *guide* is the same everywhere — same questions, same
+derived state, same files written. What differs is only the **surface** it runs in, so nothing is
+second-class and nothing half-exists.
+
+| Platform | Setup | First-run surface |
+|---|---|---|
+| **WSL on Windows** | supported | **chat-head window** (extra step, below) or the terminal — both work |
+| **Native Linux** (Ubuntu) | supported | **terminal** (default; this is the supported path) |
+| **macOS** | not supported yet — the installer refuses | planned, not built |
+| **Windows without WSL** | not supported | — |
+
+⚠️ **Windows alone is not a target.** The harness is bash + systemd + POSIX paths; there is no
+PowerShell equivalent worth writing for `systemctl --user`, `ss` or the container checks. Install WSL
+first — the guide will say the same thing.
+
+### The chat-head window (WSL + Windows only, optional)
+
+A small always-on-top bubble that opens the guide in a window instead of a terminal. It is a **Windows
+program** talking to the Linux side, because transparency and always-on-top are exactly what breaks
+under WSLg — which is also why the pet overlay in this ecosystem is a Windows program.
+
+- It is **extra setup**, not part of `bootstrap.sh`, and the terminal path never depends on it.
+- Closing the panel collapses it to a bubble; it only disappears on an explicit *Quit*.
+- Re-open it any time with `guide` in a terminal (the profile wrapper) — the window is a convenience,
+  and the terminal is always the fallback.
+
+On native Linux and macOS this surface does not exist yet; those platforms use the terminal guide,
+which is the same conversation.
+
 ## Install
 
 ```bash
