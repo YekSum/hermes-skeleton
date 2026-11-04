@@ -1,0 +1,31 @@
+#!/usr/bin/env bash
+# pre-commit — refuse to publish secrets, identifiers, or drift.
+# Install with:  cp hooks/pre-commit .git/hooks/pre-commit && chmod +x .git/hooks/pre-commit
+set -uo pipefail
+cd "$(git rev-parse --show-toplevel)"
+
+fail=0
+
+# 1. Installation identifiers anywhere in the tree (the bar in SHIPPING.md).
+if grep -rniEf .sanitize-patterns --exclude=.sanitize-patterns \
+      --exclude-dir=.git --exclude-dir=__pycache__ . ; then
+  echo "✗ refusing to commit: the tree contains installation identifiers (above)."
+  fail=1
+fi
+
+# 2. Secret-shaped strings in what is being staged (values, never names).
+if git diff --cached -U0 -- . ':!*.lock' | grep -EIo \
+     'sk-[A-Za-z0-9_-]{16,}|sk-or-v1[^\"]*|ghp_[A-Za-z0-9]{20,}|github_pat_[A-Za-z0-9_]{20,}|AIza[0-9A-Za-z_-]{30,}|xoxb-[0-9]{8,}|-----BEGIN [A-Z ]*PRIVATE KEY'; then
+  echo "✗ refusing to commit: secret-shaped string in the staged diff (above)."
+  fail=1
+fi
+
+# 3. The repo must match the live harness for everything it claims to copy.
+if ! ./export.sh --check >/dev/null 2>&1; then
+  echo "✗ refusing to commit: export.sh reports drift."
+  ./export.sh --check
+  fail=1
+fi
+
+[ "$fail" = 0 ] && echo "✓ pre-commit: clean, in sync with the live harness"
+exit "$fail"

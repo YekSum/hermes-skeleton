@@ -1,0 +1,47 @@
+# export.manifest — what the public skeleton takes from the live harness, and how.
+#
+# class <TAB> repo_path <TAB> live_path   ($HERMES_HOME is expanded)
+#
+#   copy    verbatim; any difference is drift and export.sh --check fails
+#   manual  derived by hand; the live SOURCE hash is tracked, so a change means
+#           "re-port needed" rather than being silently ignored
+#   own     authored here; never overwritten, never compared
+#
+# Anything not listed is assumed `own`. Listing an `own` file is documentation only.
+
+# ── copy: mechanism, byte-for-byte ──────────────────────────────────────────
+copy	scripts/brief.py	$HERMES_HOME/scripts/brief.py
+copy	plugins/session-brief/__init__.py	$HERMES_HOME/plugins/session-brief/__init__.py
+copy	plugins/session-brief/plugin.yaml	$HERMES_HOME/plugins/session-brief/plugin.yaml
+copy	map/scripts/map_check.py	$HERMES_HOME/scripts/map_check.py
+
+# ── manual: derived, needs judgement, cannot be regenerated safely ──────────
+# SOULs are the live file with personal territory removed + a Personalize block.
+manual	profiles/default/SOUL.md	$HERMES_HOME/SOUL.md
+manual	profiles/coder/SOUL.md	$HERMES_HOME/profiles/coder/SOUL.md
+manual	profiles/health-check-doctor/SOUL.md	$HERMES_HOME/profiles/health-check-doctor/SOUL.md
+manual	profiles/playground-manager/SOUL.md	$HERMES_HOME/profiles/playground-manager/SOUL.md
+manual	profiles/project-manager/SOUL.md	$HERMES_HOME/profiles/project-manager/SOUL.md
+manual	profiles/reporting-agent/SOUL.md	$HERMES_HOME/profiles/reporting-agent/SOUL.md
+manual	profiles/research-engineer/SOUL.md	$HERMES_HOME/profiles/research-engineer/SOUL.md
+# The public checks file is a 9-claim template; the live one is 66 machine claims.
+manual	map/ecosystem-map.checks.yaml	$HERMES_HOME/ecosystem-map.checks.yaml
+# The public skill is a redacted copy; the live one carries private context.
+manual	skills/hermes-ecosystem-ops/SKILL.md	$HERMES_HOME/skills/hermes-ecosystem-ops/SKILL.md
+
+# ── own: authored in this repo ──────────────────────────────────────────────
+own	README.md	-
+own	SHIPPING.md	-
+own	SANITIZE.md	-
+own	bootstrap.sh	-
+own	export.sh	-
+own	export.manifest	-
+own	.sanitize-patterns	-
+own	.env.template	-
+own	.gitignore	-
+own	map/ecosystem-map.template.md	-
+own	registry/SCHEMA.md	-
+own	registry/board.md	-
+own	registry/projects.md	-
+own	registry/inbox/README.md	-
+own	hooks/pre-commit	-

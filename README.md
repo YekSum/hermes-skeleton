@@ -80,3 +80,17 @@ memory stays thin, and knowledge lives where it belongs — SOUL for behaviour,
 skills for procedure, the map for structure, artifacts for output. Read the
 `hermes-ecosystem-ops` skill first; it explains *why* each convention exists,
 including the failures that produced them.
+
+## Keeping this repo true to a live harness
+
+`export.sh` regenerates what can be generated and refuses to publish what should not be:
+
+```bash
+./export.sh --check     # drift report (CI / pre-commit gate)
+./export.sh --write     # refresh files copied from the live harness
+./export.sh --accept    # after hand-porting a SOUL / the skill, record the new source hash
+cp hooks/pre-commit .git/hooks/pre-commit && chmod +x .git/hooks/pre-commit
+```
+
+See `SHIPPING.md` for the rule that decides what belongs here at all: structure travels, biography
+does not.

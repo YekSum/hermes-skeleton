@@ -1,23 +1,21 @@
 #!/usr/bin/env python3
 """map_check.py — deterministic, no-LLM verification of ecosystem-map.md claims.
 
-Each check in the checks file pairs a CLAIM (what the map asserts) with the shell
-command that proves it. This script runs them and reports DRIFT (claim vs reality).
+Each check in ecosystem-map.checks.yaml pairs a claim with the shell command that
+proves it. This script runs them and reports DRIFT (claim vs reality).
 
-Why it exists: a health check that spends model tokens doing mechanical archaeology
-is expensive and error-prone — a model can misread command output; a script cannot.
-This does the mechanical part for free and deterministically, so a model is only
-needed to interpret and prescribe.
+Why it exists: the weekly health check currently spends model tokens doing
+mechanical archaeology. This does the mechanical part for free and deterministically,
+so a model is only needed to interpret and prescribe.
 
 Usage:
     python3 map_check.py             # drift lines only; prints NOTHING when healthy
                                      # (deterministic + empty == safe cron `monitor` gate)
     python3 map_check.py --verbose   # full PASS/DRIFT table for humans
     python3 map_check.py --exit-code # exit 1 when drift found (for CI/manual use)
-    python3 map_check.py --summary   # always print a one-line summary (cron `script:`)
     python3 map_check.py --checks <path>
 
-Design rules (each learned the hard way):
+Design rules:
   * Never raises on a failing check — a check that errors is reported as drift
     with the error text, not a crash.
   * Output ordering is fixed (file order) and no timestamps are printed, so an
@@ -26,15 +24,12 @@ Design rules (each learned the hard way):
   * FAIL LOUD, SILENT WHEN HEALTHY: healthy prints nothing, but every internal
     failure (missing/unparseable checks file, zero checks loaded, no usable
     interpreter) prints a `CHECKER-ERROR:` line on STDOUT. Otherwise a broken
-    checker looks exactly like a healthy system to a monitor gate.
+    checker would look exactly like a healthy system to a monitor gate.
   * PROFILE PINNING: `hermes` resolves its profile from $HERMES_HOME. Subprocesses
-    run with HERMES_HOME pinned, because running unpinned from another profile's
-    context (e.g. an auditor profile, as a cron job does) produces phantom drifts
-    on a healthy system. Checks should ALSO pass an explicit `-p <profile>`.
-
-Configure via environment if your layout differs:
-    HERMES_HOME      (default: ~/.hermes)
-    MAP_CHECKS_FILE  (default: <HERMES_HOME>/ecosystem-map.checks.yaml)
+    run with HERMES_HOME pinned to the default home, because running unpinned from
+    another profile's context (e.g. health-check-doctor, as the weekly cron does)
+    produced 11 phantom drifts on a healthy system. Checks additionally pass an
+    explicit `-p <profile>` where they mean a specific profile.
 """
 
 from __future__ import annotations
@@ -44,12 +39,11 @@ import os
 import shutil
 import subprocess
 import sys
+from datetime import datetime
 from pathlib import Path
 
-HERMES_HOME = Path(os.environ.get("HERMES_HOME", str(Path.home() / ".hermes")))
-CHECKS_FILE = Path(
-    os.environ.get("MAP_CHECKS_FILE", str(HERMES_HOME / "ecosystem-map.checks.yaml"))
-)
+DEFAULT_HOME = os.environ.get("HERMES_HOME") or os.path.expanduser("~/.hermes")
+CHECKS_FILE = Path(DEFAULT_HOME) / "ecosystem-map.checks.yaml"
 TIMEOUT_S = 30
 
 
@@ -62,8 +56,8 @@ def _fail_loud(msg: str, code: int = 2) -> int:
 def _ensure_yaml() -> None:
     """Guarantee PyYAML is importable, re-execing under an interpreter that has it.
 
-    The python on PATH varies — some Hermes-managed interpreters do NOT ship
-    PyYAML while the system python does. An unattended cron job must not depend on
+    The python on PATH varies (the Hermes venv and the bundled tools python do NOT
+    ship PyYAML; the system python does). An unattended cron job must not depend on
     which one it gets, so probe a few known interpreters and re-exec.
     """
     try:
@@ -106,7 +100,7 @@ import yaml  # noqa: E402  (imported after the re-exec guard)
 def run_check(cmd: str) -> tuple[str, str | None]:
     """Return (observed_output, error). Never raises."""
     env = dict(os.environ)
-    env["HERMES_HOME"] = str(HERMES_HOME)  # see PROFILE PINNING above
+    env["HERMES_HOME"] = DEFAULT_HOME  # see PROFILE PINNING in the module docstring
     try:
         p = subprocess.run(
             cmd,
@@ -131,12 +125,12 @@ def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--verbose", action="store_true", help="print PASS lines too")
     ap.add_argument("--exit-code", action="store_true", help="exit 1 when drift found")
+    ap.add_argument("--checks", default=str(CHECKS_FILE), help="path to the checks file")
     ap.add_argument(
         "--summary",
         action="store_true",
-        help="always print a one-line summary even when healthy",
+        help="always print a one-line summary even when healthy (for cron `script:` injection)",
     )
-    ap.add_argument("--checks", default=str(CHECKS_FILE), help="path to the checks file")
     args = ap.parse_args()
 
     checks_path = Path(args.checks)
@@ -184,12 +178,23 @@ def main() -> int:
         print(f"summary: {passed}/{total} pass, {drifted} drift")
         return 1 if (drifted and args.exit_code) else 0
 
+    # The injected context is the model's ONLY authoritative date source. Without it the
+    # report invents one (real incident: a run on 2026-10-31 was dated 2026-11-07).
+    # Emitted ONLY under --summary: monitor mode must stay timestamp-free, because a value
+    # that changes every day would make every tick look like drift.
+    date_line = f"run_date: {datetime.now().strftime('%Y-%m-%d')}"
+
     # Monitor mode: print ONLY drift. Empty output == healthy == no model run.
     if drift_lines:
         print("\n".join(drift_lines))
         print(f"summary: {drifted}/{total} claim(s) drifted")
+        if args.summary:
+            print(date_line)
     elif args.summary:
+        # Cron `script:` injection wants a line even when healthy, so the weekly
+        # report can state the mechanical verification ran and passed.
         print(f"map_check: {passed}/{total} checks pass, no drift")
+        print(date_line)
     # else: deliberately print nothing (monitor-safe).
 
     return 1 if (drifted and args.exit_code) else 0

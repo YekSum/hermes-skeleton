@@ -88,11 +88,26 @@ the narrative was dropped. The lesson travelled; the biography did not.
 
 ## Keeping it honest
 
-The repo is not a snapshot to be re-copied when someone remembers. `export.sh` owns it:
+The repo is not a snapshot to be re-copied when someone remembers. `export.sh` owns it, driven by
+`export.manifest` (one line per file: `class`, repo path, live path).
 
-- `export.sh --check` — diffs **structure** and **template** files against the live harness and fails
-  on any unexpected difference. Curated files are listed as info only.
-- `export.sh --write` — copies structure files, regenerates templates, leaves curated files alone,
-  then runs the publication-bar grep and **refuses to write if it hits**.
+- `./export.sh --check` — diffs `copy` files byte-for-byte and compares `manual` files against the
+  **source hash** recorded in `.export-lock`. Exits 1 on any copy drift or re-port need, so it can be
+  a pre-commit gate. `own` files are never compared.
+- `./export.sh --write` — refreshes `copy` files only. It stages them, runs the publication bar over
+  the staged content, and **refuses to write if anything trips** — so a leak is blocked before it
+  lands, not discovered later. `manual` files are never touched: regenerating prose from prose is how
+  a careful redaction becomes an accident.
+- `./export.sh --accept` — after you re-port a `manual` file by hand, records the new source hash.
+  The lock stores **repo-relative paths only**, so it carries no machine paths.
+- `./export.sh --list` — the manifest with every file's current status.
 
-A stale copy is therefore a build failure, not a thing someone notices three weeks later.
+`hooks/pre-commit` runs all three gates on every commit: installation identifiers anywhere in the
+tree, secret-shaped strings in the staged diff, and `export.sh --check`. Install it with:
+
+```bash
+cp hooks/pre-commit .git/hooks/pre-commit && chmod +x .git/hooks/pre-commit
+```
+
+A stale copy is therefore a build failure, not a thing someone notices three weeks later — and a
+secret is a refused write rather than a `git rm` after the fact.
