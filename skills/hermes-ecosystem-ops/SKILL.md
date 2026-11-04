@@ -169,6 +169,15 @@ result.
 - **Hard rules belong in the coder's SOUL, not in a request:** print mode with a turn cap, task-scoped
   tool allowlists, never a permission-skipping flag, no commit or push without explicit authorization,
   never touch another profile's directories/memories/cron/registry, never print credential values.
+- **Install the CLI OUTSIDE `~/.hermes/tools/`.** Hermes re-provisions that directory (its `facts.json`
+  and node distribution are rebuilt), and npm globals installed into it silently disappear — twice in one
+  day. Use a user prefix instead (`npm config set prefix ~/.npm-global`), put it on `PATH`, and only
+  then install. The same applies to any global tool: if Hermes manages the directory, it owns what is
+  in it.
+- **Then verify it resolves in the USER's shell, not yours.** Hermes' terminal keeps state between calls,
+  so a `PATH` you exported while installing is still live in your session: `command -v <cli>` succeeds
+  for a tool the user cannot run, and you will confidently tell them it is installed. Test in a clean
+  shell (`env -i HOME=$HOME bash -ic 'command -v <cli>'`).
 - **Keep the coder on a local terminal backend.** A docker sandbox cannot see the CLI binary or its
   user-level auth (`~/.claude/`), so the builder would fail in a way that looks like a config bug.
 - **Installing the CLI:** a plain global npm install leaves a symlink to a binary the postinstall never
@@ -232,6 +241,14 @@ result.
 - **Ask who may talk to the bot before enabling messaging**, and never read a token through the chat —
   session transcripts are stored, so a pasted token is a credential at rest.
 
+- **The README is the first-run UX, and the platform gate is honest.** Assume the reader has never
+  installed an agent: copy-paste commands only, one command per stage, nothing that requires editing a
+  file by hand before anything works. Declare ONE supported platform, and make the installer *refuse*
+  elsewhere with a plain sentence — a silent half-install on an untested OS is worse than a refusal.
+- **One command, then a conversation.** `git clone && ./bootstrap.sh` should end inside the guide, not on
+  a page of instructions. Guard the hand-over: never launch on a non-TTY (a piped run would hang
+  forever), honour a `--no-launch` flag, and report a missing profile or model instead of opening a
+  session that cannot answer.
 ## Packaging the harness as a skeleton
 
 - **The test is purpose, not secrecy.** Ship a file if it is needed to rebuild the *shape* on a fresh

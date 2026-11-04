@@ -11,6 +11,10 @@
 #   ./bootstrap.sh --dry-run     # show every action, change nothing
 #   ./bootstrap.sh               # apply
 #   ./bootstrap.sh --force       # also overwrite existing SOUL.md files
+#   ./bootstrap.sh --no-launch   # never start the guide (CI, piped runs, scripting)
+#
+# On a real TTY it ends by starting the onboarding guide, so cloning the repo and running
+# one command lands the user in a conversation rather than in a wall of instructions.
 #
 # Env:
 #   HERMES_HOME   (default: ~/.hermes)
@@ -22,10 +26,13 @@ HERMES_HOME="${HERMES_HOME:-$HOME/.hermes}"
 
 DRY_RUN=0
 FORCE=0
+NO_LAUNCH=0
+GUIDE_PROFILE="${GUIDE_PROFILE:-guide}"
 for arg in "$@"; do
   case "$arg" in
     --dry-run) DRY_RUN=1 ;;
     --force)   FORCE=1 ;;
+    --no-launch) NO_LAUNCH=1 ;;
     -h|--help) sed -n '2,20p' "$0"; exit 0 ;;
     *) echo "unknown option: $arg" >&2; exit 2 ;;
   esac
@@ -149,6 +156,36 @@ if [ -n "${PERSONALIZE_TODO:-}" ]; then
     grep -q "Personalize — required before use" "$f" 2>/dev/null && echo "     $f"
   done
 fi
+
+# ── 8. Hand over to the guide ────────────────────────────────────────────────
+# The point of the whole script: one command, then a conversation. Everything above is
+# plumbing the user should not have to think about.
+say "8. Onboarding guide"
+
+# The point of the whole script: one command, then a conversation.
+GUIDE_READY=1
+GUIDE_SKIP=""
+if [ "$DRY_RUN" = "1" ]; then
+  GUIDE_READY=0; GUIDE_SKIP="[dry-run] would start: hermes -p $GUIDE_PROFILE chat -q hi"
+elif [ "$NO_LAUNCH" = "1" ]; then
+  GUIDE_READY=0; GUIDE_SKIP="--no-launch given."
+elif [ ! -t 0 ] || [ ! -t 1 ]; then
+  GUIDE_READY=0; GUIDE_SKIP="Not a terminal — a piped run must never hang waiting for a conversation."
+elif [ ! -f "$HERMES_HOME/profiles/$GUIDE_PROFILE/config.yaml" ]; then
+  GUIDE_READY=0; GUIDE_SKIP="No '$GUIDE_PROFILE' profile installed yet, so there is nothing to talk to."
+elif ! hermes -p "$GUIDE_PROFILE" config get model >/dev/null 2>&1; then
+  GUIDE_READY=0; GUIDE_SKIP="No model configured for '$GUIDE_PROFILE'."
+fi
+
+if [ "$GUIDE_READY" = "1" ]; then
+  echo "  Starting the guide — it derives what is still unconfigured from this machine."
+  echo
+  # Seed the first turn: a model cannot speak unbidden, but the launcher can send one.
+  exec hermes -p "$GUIDE_PROFILE" chat -q "hi"
+fi
+
+echo "  $GUIDE_SKIP"
+echo "  Start it when ready:  hermes -p $GUIDE_PROFILE chat -q hi"
 
 cat <<'EOF'
 Next steps:

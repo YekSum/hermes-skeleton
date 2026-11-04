@@ -41,6 +41,28 @@ Design notes:
 - **Never a custom TUI for this.** A launcher that prints its own greeting and then hands over produces
   two voices in one session; let the agent own the conversation.
 
+## One command, then a conversation
+
+```bash
+git clone <repo> && cd <repo> && ./bootstrap.sh
+```
+
+That is the whole entry point. `bootstrap.sh` creates the profiles, wires delegation, installs the
+skill, and — on a real terminal — **ends by starting the guide**, so the first thing the user meets is a
+conversation, not a wall of instructions. Stages 0–2 below are what that one command does, in order;
+they are separated here because each has its own failure modes, not because the user runs three
+commands.
+
+Guards on the hand-over, each learned from a way it goes wrong:
+
+- **Never launch on a non-TTY** (`[ -t 0 ]`). A piped or CI run would hang forever waiting for a
+  conversation nobody can see.
+- **`--no-launch`** for scripted installs, and `--dry-run` never launches at all.
+- **Missing prerequisites are reported, not entered into.** No `guide` profile or no model configured
+  prints the exact command to fix it rather than opening a session that cannot answer.
+- **Re-running is safe.** Bootstrap is non-destructive; if the guide is already set up it says so and
+  offers what is left, because its state is derived (see "The tutorial model").
+
 ## Stage 0 — prerequisites (README, copy-paste only)
 
 Two things must already be true, and the README says them in two lines:
@@ -248,8 +270,13 @@ it can be updated without touching a profile home.
 - **Does the interview create profiles via `bootstrap.sh`, or write them itself?** Reusing bootstrap
   keeps one implementation of profile creation; it also means the interview must handle bootstrap's
   refusals.
-- **How is the interview shipped?** A prompt + a skill, a small CLI wrapper, or a profile-level
-  distribution? (This is the HA-018 vs HA-021 decision — pick one, not both.)
+- **How is the interview shipped?** *Decided 2026-11-02: a **profile** (`guide`), launched automatically
+  by `bootstrap.sh` — HA-018, not HA-021.* The requirement that settled it: after `git clone` and one
+  command, the profile must be running and asking the right questions. A profile also earns its
+  existence on lifecycle (it recurs), which a CLI wrapper does not. HA-021 stays on the board as the
+  alternative mechanism, unbuilt. **Remaining artifact: the `guide` profile's SOUL** — the question
+  list, the must-setup probes, and the introduction. The launch path is in place and tested; there is
+  simply nothing for it to open yet.
 - **Which messaging platform is the default recommendation?** Telegram is the cheapest to set up
   (BotFather, one token, no app review); Discord needs a developer app; WhatsApp needs a business
   account. Pick one to lead with and mention the others.
