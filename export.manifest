@@ -34,6 +34,7 @@ own	README.md	-
 own	SHIPPING.md	-
 own	SANITIZE.md	-
 own	bootstrap.sh	-
+own	setup.sh	-
 own	export.sh	-
 own	export.manifest	-
 own	.sanitize-patterns	-

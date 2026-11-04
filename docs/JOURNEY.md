@@ -82,7 +82,7 @@ Two things must already be true, and the README says them in two lines:
 
 No judgement calls, no profiling, nothing to read beyond the two lines.
 
-## Stage 1 — `./setup.sh` — key, model, no LLM
+## Stage 1 — `./setup.sh` — key, model, no LLM  ✅ built
 
 One command. It asks the smallest possible set of questions, in plain text:
 
@@ -109,7 +109,7 @@ Design rules for this stage:
   reports state without writing.
 - **No secrets in the repo, ever.** This script writes to `.env`; it never writes to a tracked file.
 
-## Stage 2 — `./start-setup.sh` — the interview
+## Stage 2 — the interview (launched by `bootstrap.sh`)  ✅ built
 
 One command opens a chat session with the onboarding prompt. This is the first moment the skeleton
 introduces itself, and the order of the conversation matters more than the wording:

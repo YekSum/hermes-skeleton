@@ -191,7 +191,7 @@ elif ! grep -qE '^[A-Z_]*(_API_KEY|_TOKEN|_KEY)=.+' "$HERMES_HOME/profiles/$GUID
      && ! grep -qE '^[A-Z_]*(_API_KEY|_TOKEN|_KEY)=.+' "$HERMES_HOME/.env" 2>/dev/null; then
   # A conversation needs a model, and a model needs a key. Launching into an auth error is not a
   # first-run experience, it is a bug report.
-  GUIDE_READY=0; GUIDE_SKIP="No API key yet — put one in $HERMES_HOME/profiles/$GUIDE_PROFILE/.env (names in .env.template)."
+  GUIDE_READY=0; GUIDE_SKIP="No API key yet — run ./setup.sh (provider, key, model), then re-run bootstrap."
 elif ! hermes -p "$GUIDE_PROFILE" config get model >/dev/null 2>&1; then
   GUIDE_READY=0; GUIDE_SKIP="No model configured for '$GUIDE_PROFILE'."
 fi

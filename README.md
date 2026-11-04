@@ -98,17 +98,17 @@ which is the same conversation.
 ```bash
 git clone <this-repo> ~/hermes-ecosystem-skeleton
 cd ~/hermes-ecosystem-skeleton
-./bootstrap.sh --dry-run     # show what it would do
-./bootstrap.sh               # do it
+./setup.sh                   # provider + key + model, verified with one live call
+./bootstrap.sh               # profiles, delegation, skill, then the guide starts
 ```
 
-Then fill in credentials:
+`./setup.sh` is the only place a credential is typed: input is hidden, it is never echoed or logged,
+and it is written straight into `.env` with mode 600. If the key is wrong you find out in twenty
+seconds, not two hundred lines into an interview. `./setup.sh --check` reports what is configured
+without changing anything.
 
-```bash
-cp .env.template ~/.hermes/.env        # default/orchestrator profile
-# and one per specialist profile, e.g.:
-cp .env.template ~/.hermes/profiles/research-engineer/.env
-```
+Everything else needs no keys. A profile gets a credential only if it uses that provider — a profile
+that cannot reach a provider cannot silently spend on it.
 
 `bootstrap.sh` is **non-destructive**: it creates missing profiles, never
 overwrites an existing `SOUL.md` without `--force`, and never touches
