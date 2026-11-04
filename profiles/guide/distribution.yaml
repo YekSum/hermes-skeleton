@@ -1,0 +1,11 @@
+# Profile distribution manifest — lets this profile be installed on its own:
+#   hermes profile install <path-or-git-url>/profiles/guide
+name: guide
+version: 1.0.0
+description: >-
+  Onboarding guide. Runs the first-run interview, derives what is still unconfigured, and stays
+  available for setup questions. Inherits the default profile's model — a setup assistant has no
+  reason to run on a different one.
+env_requires:
+  - name: OPENROUTER_API_KEY
+    description: "Model provider key (or swap the profile's model to another provider)."

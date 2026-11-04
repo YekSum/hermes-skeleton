@@ -48,3 +48,8 @@ own	docs/JOURNEY.md	-
 own	cron/weekly-drift-check.sh	-
 own	cron/weekly-drift-check.job.md	-
 own	hooks/pre-commit	-
+
+# The guide ships complete (no Personalize block): it is the thing that fills in everyone else's.
+own	profiles/guide/SOUL.md	-
+own	profiles/guide/distribution.yaml	-
+own	profiles/guide/skills/onboarding-guide/SKILL.md	-

@@ -40,7 +40,7 @@ done
 
 # Specialists that receive delegated work. Keep this list in sync with
 # profiles/ and with the delegation routes below.
-SPECIALISTS=(project-manager playground-manager reporting-agent health-check-doctor research-engineer)
+SPECIALISTS=(project-manager playground-manager reporting-agent health-check-doctor research-engineer coder)
 
 # install_soul <src> <dst> — install a profile SOUL without clobbering a customized one.
 # `hermes profile create` writes its OWN stock SOUL.md (the generic Hermes identity). Treating any
@@ -95,13 +95,27 @@ install_soul "$HERE/profiles/default/SOUL.md" "$HERMES_HOME/SOUL.md"
 # ── 2. Specialist profiles ───────────────────────────────────────────────────
 say "2. Specialist profiles"
 for p in "${SPECIALISTS[@]}"; do
-  if [ -f "$HERMES_HOME/profiles/$p/config.yaml" ]; then
+  if [ -d "$HERMES_HOME/profiles/$p" ]; then
     echo "  $p: exists"
   else
     run "hermes profile create '$p'"
   fi
   install_soul "$HERE/profiles/$p/SOUL.md" "$HERMES_HOME/profiles/$p/SOUL.md"
 done
+
+# ── 2b. The onboarding guide ─────────────────────────────────────────────────
+# Deliberately NOT in SPECIALISTS: it is not a delegated work target. It is the thing that talks to
+# the user, so it must not appear in the routing table as "do this work".
+say "2b. Onboarding guide"
+if [ -d "$HERMES_HOME/profiles/$GUIDE_PROFILE" ]; then
+  echo "  $GUIDE_PROFILE: exists"
+else
+  run "hermes profile create '$GUIDE_PROFILE'"
+fi
+install_soul "$HERE/profiles/$GUIDE_PROFILE/SOUL.md" "$HERMES_HOME/profiles/$GUIDE_PROFILE/SOUL.md"
+if [ -d "$HERE/profiles/$GUIDE_PROFILE/skills" ]; then
+  run "mkdir -p '$HERMES_HOME/profiles/$GUIDE_PROFILE/skills' && cp -r '$HERE/profiles/$GUIDE_PROFILE/skills/.' '$HERMES_HOME/profiles/$GUIDE_PROFILE/skills/'"
+fi
 
 # ── 3. Wire delegation ───────────────────────────────────────────────────────
 say "3. Delegation topology (profile_routes)"
@@ -134,7 +148,7 @@ run "mkdir -p '$HERMES_HOME/scripts' && cp '$HERE/map/scripts/map_check.py' '$HE
 
 # ── 6. Credentials ───────────────────────────────────────────────────────────
 say "6. Credentials (you must fill these in)"
-for p in "" "${SPECIALISTS[@]}"; do
+for p in "" "${SPECIALISTS[@]}" "$GUIDE_PROFILE"; do
   target="$HERMES_HOME/.env"
   [ -n "$p" ] && target="$HERMES_HOME/profiles/$p/.env"
   if [ -f "$target" ]; then
@@ -171,8 +185,13 @@ elif [ "$NO_LAUNCH" = "1" ]; then
   GUIDE_READY=0; GUIDE_SKIP="--no-launch given."
 elif [ ! -t 0 ] || [ ! -t 1 ]; then
   GUIDE_READY=0; GUIDE_SKIP="Not a terminal — a piped run must never hang waiting for a conversation."
-elif [ ! -f "$HERMES_HOME/profiles/$GUIDE_PROFILE/config.yaml" ]; then
+elif [ ! -d "$HERMES_HOME/profiles/$GUIDE_PROFILE" ]; then
   GUIDE_READY=0; GUIDE_SKIP="No '$GUIDE_PROFILE' profile installed yet, so there is nothing to talk to."
+elif ! grep -qE '^[A-Z_]*(_API_KEY|_TOKEN|_KEY)=.+' "$HERMES_HOME/profiles/$GUIDE_PROFILE/.env" 2>/dev/null \
+     && ! grep -qE '^[A-Z_]*(_API_KEY|_TOKEN|_KEY)=.+' "$HERMES_HOME/.env" 2>/dev/null; then
+  # A conversation needs a model, and a model needs a key. Launching into an auth error is not a
+  # first-run experience, it is a bug report.
+  GUIDE_READY=0; GUIDE_SKIP="No API key yet — put one in $HERMES_HOME/profiles/$GUIDE_PROFILE/.env (names in .env.template)."
 elif ! hermes -p "$GUIDE_PROFILE" config get model >/dev/null 2>&1; then
   GUIDE_READY=0; GUIDE_SKIP="No model configured for '$GUIDE_PROFILE'."
 fi

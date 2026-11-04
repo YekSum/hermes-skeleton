@@ -36,6 +36,7 @@ without the flag, then fill in `ecosystem-map.md` and each profile's `Personaliz
 |---|---|
 | `profiles/<name>/SOUL.md` | Each profile's identity and standing rules |
 | `profiles/<name>/distribution.yaml` | Per-profile manifest (so a single profile is installable on its own) |
+| `profiles/guide/` | The onboarding guide — its SOUL plus the `onboarding-guide` skill (question bank, probes, closing script). Ships **complete**, not as a template: it fills in everyone else's. |
 | `skills/hermes-ecosystem-ops/` | The operating manual: board conventions, delegation guardrails, memory hygiene, the profiles-vs-skills rubric |
 | `map/ecosystem-map.template.md` | The "README for Hermes" — structure to fill in for your machine |
 | `map/ecosystem-map.checks.yaml` | Claims paired with the commands that prove them |
