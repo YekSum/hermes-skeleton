@@ -7,6 +7,20 @@ Take this repo to another machine, run one script, and you get the same shape:
 an orchestrator profile plus specialists, a single-writer registry/board, a
 delegation topology, a documented harness map, and a deterministic checker.
 
+## Schedule the drift check
+
+The checker only helps if something runs it. One command, and it runs weekly for free:
+
+```bash
+cp cron/weekly-drift-check.sh "$HERMES_HOME/scripts/" && chmod +x "$HERMES_HOME/scripts/weekly-drift-check.sh"
+hermes cron create "0 9 * * 1" --name "Weekly drift check" \
+  --script weekly-drift-check.sh --deliver local --no-agent
+```
+
+`--no-agent` means stdout is delivered verbatim with no model call: a healthy week costs nothing and
+prints one line. Details, the upgrade path to an interpreted report, and why this ships as a spec
+rather than an exported job: [`cron/weekly-drift-check.job.md`](cron/weekly-drift-check.job.md).
+
 ## Getting started (designed, not yet built)
 
 The intended path is written up in **[`docs/JOURNEY.md`](docs/JOURNEY.md)**: `git clone` → one script to
@@ -29,6 +43,10 @@ without the flag, then fill in `ecosystem-map.md` and each profile's `Personaliz
 | `bootstrap.sh` | Creates the profiles, wires delegation, installs the skill |
 | `.env.template` | Which credentials each profile needs |
 | `SANITIZE.md` | Exactly what was stripped from the source setup, and why |
+| `cron/weekly-drift-check.sh` | Deterministic weekly drift check — no LLM, zero tokens |
+| `cron/weekly-drift-check.job.md` | The job **spec** (install it yourself; nothing writes your `jobs.json`) |
+| `registry/` | Board/project schema, empty templates, and the inbox contract |
+| `docs/JOURNEY.md` | The intended onboarding journey — design, not yet built |
 
 ## What deliberately does NOT ship
 

@@ -160,9 +160,80 @@ them where they already are, and the desktop becomes unnecessary.
   a bad thing to put in front of someone who has not yet seen anything work.
 - It gives the journey a finish: *"setup is done and verified — open the app and say hello."*
 
+## Stage 6 — a rhythm (schedule the drift check)
+
+Setup is verified on day one. The thing that kills it later is silent drift: a provider changes a key
+format, a plugin stops loading, a profile's backend flips to docker. Nobody notices, because nothing
+runs. The skeleton ships the checker (`map_check.py`) and the checks file; it should also ship **the
+schedule**, or the check only ever runs when someone remembers.
+
+**Ship the job's design and its script, never a live job definition.** Three reasons, all learned the
+hard way:
+
+- **A job definition carries per-install state** — job id, delivery target, next-run timestamp. Ours
+  had a Telegram channel baked in. Imported into a fresh install it delivers to a chat that does not
+  exist and fails *quietly*, which is the worst possible failure for a monitor.
+- **The prompt is part of the job's code.** Format instructions and delivery assumptions live in the
+  stored prompt; a generic "run the health check" prompt produces a generic report. Ship the text.
+- **A schedule needs a channel the user has.** If the user skipped stage 5, a delivery-based job has
+  nowhere to send. Default the spec to `deliver: none` (write to the output dir) and let the user
+  point it somewhere in one edit.
+
+So the deliverable is a `cron/` folder: `weekly-drift-check.sh` (deterministic, `map_check.py
+--summary`, no LLM, no personal paths) plus `weekly-drift-check.job.md` — a human-readable spec giving
+name, schedule, script, skills, and the report shape — and one install command in the README
+(`hermes cron add ...`). The user runs it; we never write into their `jobs.json` directly.
+
+**The honest caveat:** the deterministic part is free and safe to schedule. The LLM pass on top costs
+tokens every week and is only worth it while the map is still changing. Recommend the script-only job
+as the default and mention the agent variant as an upgrade — a weekly zero-token "healthy" line is
+still worth having, and it makes a red week meaningful.
+
 **If you move the desktop earlier** — offered as the interview's own surface — it goes between stages 1
 and 2, never inside stage 1, and you accept a doubled first-run failure rate in exchange for a nicer
 conversation.
+
+---
+
+## The tutorial model — must-setup, then optional
+
+The guide is not a wizard that runs once and dies. It is closer to an open-world tutorial: it stays
+available, insists on the things that must work, and then gets out of the way.
+
+**Two tiers.**
+
+- **Must-setup** (the guide will not let go): a model and key that provably work; the profiles the user
+  chose created; `ecosystem-map.md` present; `map_check` green. Until these pass, the harness is not
+  running — it is merely installed.
+- **Optional, always offered, never nagged**: messaging, the desktop app, the weekly schedule, a second
+  specialist, the first delegation, a knowledge store. Once must-setup is green the guide says so
+  plainly — *"you can stop here"* — and lists what is left without tracking it as failure.
+
+**Progress is derived, never remembered.** The guide answers "where am I?" by probing the system, not
+by reading its own notes:
+
+| question | probe |
+|---|---|
+| model configured and working? | one live call, or the config + a cheap request |
+| profiles created? | `profiles/<name>/config.yaml` exists |
+| map written? | `ecosystem-map.md` exists and is not the template |
+| verified? | `map_check.py` exit code |
+| messaging on? | the gateway unit is enabled and a platform key exists in `.env` |
+| anything scheduled? | a job in `hermes cron list` referencing the drift script |
+
+This is the same rule as the session brief: a hand-written status goes stale, a derived one cannot.
+It also means the guide works on a machine that was set up months ago by someone else — it re-derives
+instead of assuming it remembers.
+
+**Consequence: the guide keeps no state file.** Its memory is the system. If it cannot derive a fact,
+it should ask, not assume.
+
+**Why a profile and not a skill.** By the rubric a profile earns its existence on model, credentials,
+isolation or lifecycle — and this one earns it on lifecycle: it recurs, with continuity, across
+sessions and machines. Everything else about it (its wording, its question list) belongs in a skill so
+it can be updated without touching a profile home.
+
+**Naming:** if it persists, `onboarding` is a misnomer — its job outlives setup. `guide` is honest.
 
 ---
 
@@ -170,7 +241,10 @@ conversation.
 
 - **Where does the onboarding agent run?** In the default profile (which exists on a fresh install), or
   as a throwaway profile that deletes itself? The former is simpler; the latter keeps the user's first
-  profile clean of setup chatter.
+  profile clean of setup chatter. *Revised 2026-11-02: a dedicated `guide` profile — installed in
+  stage 1, used in stage 2, and **kept**. It persists as a tutorial guide whose must-setup tier it will
+  not let go of, and whose progress is derived from the system rather than remembered. See "The
+  tutorial model" above.*
 - **Does the interview create profiles via `bootstrap.sh`, or write them itself?** Reusing bootstrap
   keeps one implementation of profile creation; it also means the interview must handle bootstrap's
   refusals.
@@ -181,7 +255,12 @@ conversation.
   account. Pick one to lead with and mention the others.
 - **Does the onboarding profile persist after setup?** It costs a profile home and a slot in the routing
   table, and its job is over. Either document it as "delete when done" or give it a second duty
-  (re-running setup on a new machine).
+  (re-running setup on a new machine). *Reversed 2026-11-02: it **does** persist — deleting it removes
+  the one thing that answers "how do I…?" three weeks later, at exactly the moment that question gets
+  asked. The earlier "delete when done" decision was wrong for a different reason than tidiness: a
+  guide that is gone cannot tell you what is still unconfigured, and "complete enough" is a property of
+  the must-setup tier, not a reason to delete the guide. The cost is one profile home and one routing
+  slot, paid knowingly.*
 - **macOS:** what is the minimum honest gate? `uname` check and a README sentence is probably enough
   until the Linux path has been run by someone who is not its author.
 - **What does the interview do on a machine that already has a harness?** Refuse by default; re-run in

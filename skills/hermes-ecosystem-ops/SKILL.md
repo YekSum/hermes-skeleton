@@ -211,6 +211,27 @@ result.
 - Wire it as a cron `script:` (stdout injected into the prompt) to remove mechanical archaeology from the model's job, keeping the model for interpretation. A cron `monitor:` gate can skip the model entirely when output is unchanged — but only after profile-pinning and fail-loud are in place, and it makes healthy runs silent.
 - Keep the map's advertised check count in sync with the checks file via a self-consistency check.
 
+## Onboarding a new user — must-setup, then optional
+
+- **The guide persists; it is a tutorial, not a wizard.** It enforces a *must-setup* tier (a model and
+  key that provably work, the chosen profiles created, the map present, the checker green) and then
+  offers everything else — messaging, desktop, a schedule, extra specialists — as optional, saying
+  plainly that the user can stop there. Deleting a setup assistant at the end removes the one thing
+  that answers "how do I…?" three weeks later, at exactly the moment it gets asked.
+- **Its progress must be derived, never remembered.** Answer "where am I?" by probing the system —
+  profile config files, the map, the checker's exit code, the gateway unit, the job list — so the guide
+  cannot drift and works on a machine set up months ago by someone else. No state file: if it cannot
+  derive a fact it asks. Same rule as the session brief.
+- **The interview cannot run before a model exists.** An interviewer is an agent, so key + model setup
+  is a plain script (hidden input, verified with one live call, never echoed) and the conversation
+  starts after it. The launcher seeds the first turn (`<cli> chat -q "hi"`); the profile's SOUL owns the
+  conversation — never print your own greeting in the launcher, or the session has two voices.
+- **A profile earns its existence here on lifecycle**, not on model or credentials: it recurs with
+  continuity. Wording and question list belong in a skill so they can change without touching a profile
+  home. If it persists, name it `guide`, not `onboarding`.
+- **Ask who may talk to the bot before enabling messaging**, and never read a token through the chat —
+  session transcripts are stored, so a pasted token is a credential at rest.
+
 ## Packaging the harness as a skeleton
 
 - **The test is purpose, not secrecy.** Ship a file if it is needed to rebuild the *shape* on a fresh
@@ -258,6 +279,14 @@ result.
   generated per session, and what is fetched on demand — explicitly — instead of restating how it works.
 - **Distinguish a choice by one concrete event, not by category labels.** "You add a status — what
   happens on each path?" splits two options that read as synonyms until an event separates them.
+
+- **Ship the schedule's design and its script, never a live job definition.** A job file carries
+  per-install state — job id, delivery target, next-run timestamp — so an imported job posts to a chat
+  that does not exist and fails *silently*, the worst failure for a monitor. Ship `cron/<job>.sh` plus
+  a human-readable `cron/<job>.job.md` spec and one install command; never write the user's job store.
+- **Ask before every push — a standing preference, not a courtesy.** Never push without explicit
+  consent, each time, including doc-only commits. Say what would be pushed and wait; a push that
+  already ran is not a request for consent. Local commits need no permission.
 
 ## Extending the harness
 

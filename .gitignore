@@ -40,7 +40,13 @@ platforms/
 .env.lock
 auth.json
 state/
-cron/
+# Live cron STATE only — the repo has a cron/ folder of specs and scripts that must ship.
+cron/jobs.json
+cron/jobs.json.bak*
+cron/*.db
+cron/*.db-*
+cron/output/
+cron/admissions/
 desktop/
 bot_relay/
 logs/
@@ -50,3 +56,6 @@ logs/
 # The FILLED map is a statement about one machine; only the template ships.
 # (Uncomment if you keep your filled map in this working tree while exporting.)
 # ecosystem-map.md
+
+# export.sh backs the lock up before rewriting it — never commit the backup
+.export-lock.bak

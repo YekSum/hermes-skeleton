@@ -45,4 +45,6 @@ own	registry/board.md	-
 own	registry/projects.md	-
 own	registry/inbox/README.md	-
 own	docs/JOURNEY.md	-
+own	cron/weekly-drift-check.sh	-
+own	cron/weekly-drift-check.job.md	-
 own	hooks/pre-commit	-
