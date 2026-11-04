@@ -35,6 +35,33 @@ done
 # profiles/ and with the delegation routes below.
 SPECIALISTS=(project-manager playground-manager reporting-agent health-check-doctor research-engineer)
 
+# install_soul <src> <dst> — install a profile SOUL without clobbering a customized one.
+# `hermes profile create` writes its OWN stock SOUL.md (the generic Hermes identity). Treating any
+# existing file as "the user's" meant the skeleton's SOULs were never installed at all — caught by
+# bootstrapping into an empty HERMES_HOME. Stock is replaced (with a backup); customized is kept.
+STOCK_MARK='You are Hermes Agent, built by Nous Research. Be direct: match the length'
+install_soul() {
+  local src="$1" dst="$2" name
+  name="$(basename "$(dirname "$dst")")"; [ "$name" = "$HERMES_HOME" ] && name="default"
+  if [ ! -f "$dst" ]; then
+    run "mkdir -p '$(dirname "$dst")' && cp '$src' '$dst'"
+    PERSONALIZE_TODO="${PERSONALIZE_TODO:-} $dst"
+    return
+  fi
+  if [ "$FORCE" = "1" ]; then
+    run "cp '$src' '$dst'"
+    PERSONALIZE_TODO="${PERSONALIZE_TODO:-} $dst"
+    return
+  fi
+  if grep -qF "$STOCK_MARK" "$dst" 2>/dev/null && ! grep -q "SKELETON TEMPLATE" "$dst" 2>/dev/null; then
+    echo "  $name: replacing the stock Hermes SOUL (backup kept as SOUL.md.stock-*)"
+    run "cp '$dst' '$dst.stock-$(date +%Y%m%d-%H%M%S)' && cp '$src' '$dst'"
+    PERSONALIZE_TODO="${PERSONALIZE_TODO:-} $dst"
+  else
+    echo "  $name: SOUL.md is customized — leaving it alone (--force to replace)"
+  fi
+}
+
 run() {
   if [ "$DRY_RUN" = "1" ]; then
     printf '  [dry-run] %s\n' "$*"
@@ -56,11 +83,7 @@ say "Hermes home: $HERMES_HOME"
 
 # ── 1. The orchestrator (default profile) ────────────────────────────────────
 say "1. Orchestrator (default profile)"
-if [ -f "$HERMES_HOME/SOUL.md" ] && [ "$FORCE" != "1" ]; then
-  echo "  SOUL.md exists — leaving it alone (use --force to replace)"
-else
-  run "mkdir -p '$HERMES_HOME' && cp '$HERE/profiles/default/SOUL.md' '$HERMES_HOME/SOUL.md'"
-fi
+install_soul "$HERE/profiles/default/SOUL.md" "$HERMES_HOME/SOUL.md"
 
 # ── 2. Specialist profiles ───────────────────────────────────────────────────
 say "2. Specialist profiles"
@@ -70,11 +93,7 @@ for p in "${SPECIALISTS[@]}"; do
   else
     run "hermes profile create '$p'"
   fi
-  if [ -f "$HERMES_HOME/profiles/$p/SOUL.md" ] && [ "$FORCE" != "1" ]; then
-    echo "  $p: SOUL.md exists — leaving it alone"
-  else
-    run "mkdir -p '$HERMES_HOME/profiles/$p' && cp '$HERE/profiles/$p/SOUL.md' '$HERMES_HOME/profiles/$p/SOUL.md'"
-  fi
+  install_soul "$HERE/profiles/$p/SOUL.md" "$HERMES_HOME/profiles/$p/SOUL.md"
 done
 
 # ── 3. Wire delegation ───────────────────────────────────────────────────────
@@ -120,8 +139,23 @@ done
 
 # ── Done ─────────────────────────────────────────────────────────────────────
 say "Done"
+# ── Personalize reminder ─────────────────────────────────────────────────────
+if [ -n "${PERSONALIZE_TODO:-}" ]; then
+  echo
+  echo "⚠  These SOULs still contain their 'Personalize — required before use' block."
+  echo "   This skeleton ships empty of territory on purpose: rules, not your projects."
+  echo "   Fill each one in, then delete the block:"
+  for f in $PERSONALIZE_TODO; do
+    grep -q "Personalize — required before use" "$f" 2>/dev/null && echo "     $f"
+  done
+fi
+
 cat <<'EOF'
 Next steps:
+
+  0. Personalize each profile SOUL: it ships with rules but no territory, and ends
+     with a "Personalize — required before use" block. Fill it in, delete the block.
+     A skeleton that arrives pre-filled is just someone else's habits.
 
   1. Fill in credentials — each profile gets ONLY the keys it needs:
        $EDITOR "$HERMES_HOME/.env"

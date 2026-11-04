@@ -1,0 +1,98 @@
+# What ships, and what never does
+
+This repo is a **rebuild kit**, not a backup. The test for every file is not "is it safe to
+publish?" — it is:
+
+> **Would someone starting fresh need this to build the same *shape*?**
+> And: **does it encode a decision they have not made yet?**
+
+A file that passes the first test and fails the second is a preference, not a structure. Preferences
+stay home, even when they are perfectly safe to publish.
+
+That is why the profiles here ship **empty of territory**. Rules travel — "one writer per store",
+"facts point to the source, never copies". Memberships do not — your project names, your board
+sections, your machine's ports. The skeleton should be blank until its user fills it in, and should
+then drift toward *their* habits rather than pretending to be ours.
+
+## The four classes
+
+| class | meaning | drift policy |
+|---|---|---|
+| **structure** | Needed to rebuild the mechanism. No personal content possible. | copy verbatim; a diff from the source is an **error** |
+| **template** | Structure plus placeholders. Machine- or person-specific values blanked. | regenerated; a diff is an **error** unless it is a placeholder |
+| **curated** | Written for a public reader. Deliberately differs from the private original. | never overwritten; divergence is **info**, ported by hand |
+| **never** | State, secrets, or content that only describes one installation. | blocked by `.gitignore` and a pre-commit hook |
+
+## The manifest
+
+**structure — ship as-is**
+
+- `bootstrap.sh` — creates profiles, wires delegation, installs the skill
+- `scripts/brief.py` — renders the session brief from the canonical stores
+- `plugins/session-brief/` — the first-turn injection hook
+- `map/scripts/map_check.py` — the deterministic checker
+- `profiles/<name>/distribution.yaml` — per-profile install manifest
+
+**template — ship with placeholders**
+
+- `profiles/<name>/SOUL.md` — behavioural rules, **no territory**; each ends with a
+  `## Personalize — required before use` block that must be deleted after filling in
+- `map/ecosystem-map.template.md` — the harness map, blanked
+- `map/ecosystem-map.checks.yaml` — the claim/command pairs, with *your* claims removed
+- `registry/SCHEMA.md` + empty `board.md` / `projects.md` — the board format without the board
+- `registry/inbox/README.md` — the proposal contract
+- `.env.template` — key **names**, never values
+
+**curated — hand-written, never exported**
+
+- `README.md` — what this is, how to take it to another machine
+- `SHIPPING.md` — this file
+- `SANITIZE.md` — the pre-publish checklist
+- `skills/hermes-ecosystem-ops/SKILL.md` — the operating manual. Deliberately *not* the live copy:
+  the live one names the assistant, the dashboard, a pet, absolute paths and a password incident. A
+  verbatim export would republish all of it in one commit, with no error raised.
+- ~~`experiments/brief-ab/`~~ — **moved out of this repo.** The numbers are the argument for the
+  mechanism, but the experiment measures *one* installation's board, paths and questions against
+  *its* facts. Publishing it invites a reader to assume the numbers transfer to theirs. It lives in
+  the private repo; this one keeps the mechanism and the method, not the measurement.
+
+**never**
+
+`.env` values · `*.db`, `*.db-wal`, `*.db-shm` · `auth.json` · `memories/` · `sessions/` ·
+`state/` · `cache/` · `logs/` · `cron/` · `desktop/` (session token) · `bot_relay/` · `pairing/` ·
+`.skills_prompt_snapshot.json` · backups · **the filled `ecosystem-map.md`** · **the filled
+`board.md` / `projects.md`**
+
+The last two are the honest exclusions. The filled map is the single most useful document in a live
+harness and the least useful in a repo, because it is a statement about one machine. On a new machine
+its value comes from running the checks and writing what *they* report.
+
+## The publication bar (this repo is public)
+
+Beyond secrets, anything that identifies the installation must go. The check:
+
+```bash
+grep -rniEf .sanitize-patterns --exclude=.sanitize-patterns --exclude-dir=.git .
+```
+
+Add a line to `.sanitize-patterns` whenever a new identifier appears — the pattern list lives in one
+file so the doc, the checker and `export.sh` cannot disagree.
+
+Must return nothing. Current state: clean.
+
+What that bar cost, concretely, in the profile SOULs: an assistant name in a role table, a
+spend-cap instruction addressed to one profile by name, a container-hostname workaround for one
+search backend, and an incident narrative naming one experiment. Each was replaced with the rule
+that survived it — "agree a spend cap with the orchestrator", "verify the host bridge address" — and
+the narrative was dropped. The lesson travelled; the biography did not.
+
+## Keeping it honest
+
+The repo is not a snapshot to be re-copied when someone remembers. `export.sh` owns it:
+
+- `export.sh --check` — diffs **structure** and **template** files against the live harness and fails
+  on any unexpected difference. Curated files are listed as info only.
+- `export.sh --write` — copies structure files, regenerates templates, leaves curated files alone,
+  then runs the publication-bar grep and **refuses to write if it hits**.
+
+A stale copy is therefore a build failure, not a thing someone notices three weeks later.

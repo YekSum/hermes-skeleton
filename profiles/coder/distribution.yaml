@@ -1,0 +1,13 @@
+# Profile distribution manifest — lets this profile be installed on its own:
+#   hermes profile install <path-or-git-url>/profiles/coder
+# Recipients keep their own memories, sessions and API keys; only the agent
+# definition travels. See the repo README.
+name: coder
+version: 1.0.0
+description: >-
+  Builder. Drives a coding CLI from a written brief; writes application code, never the registry.
+# Credentials the recipient must supply (names only, never values).
+env_requires:
+  - name: OPENROUTER_API_KEY
+    description: "Model provider key for the orchestrating agent (or swap the profile's model)."
+  # The builder CLI itself authenticates separately (e.g. Claude Code keeps auth in ~/.claude/).

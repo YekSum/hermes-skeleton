@@ -1,0 +1,12 @@
+name: session-brief
+version: 1.0.0
+description: >-
+  Injects a short, generated orientation brief into the FIRST turn of a session
+  (board state, harness facts, standing rules, pointers), so the agent does not
+  open 30 KB files just to find out where things stand. The brief is rendered
+  from the canonical stores by ~/.hermes/scripts/brief.py — it is never
+  hand-written, so it cannot drift. Reads only; writes one log line.
+requires_hermes: ">=0.21.4"
+provides_tools: []
+provides_hooks:
+  - pre_llm_call

@@ -68,7 +68,7 @@ checks:
   # ── worked example: a port is listening ───────────────────────────────────
   - id: port.serve
     claim: "the desktop backend port is listening"
-    check: "ss -ltn 2>/dev/null | grep -q ':9119' && echo listening"
+    check: "ss -ltn 2>/dev/null | grep -q ':<YOUR_PORT>' && echo listening"
     expect: ["listening"]
 
   # ── worked example: delegation is wired to the expected routes ────────────

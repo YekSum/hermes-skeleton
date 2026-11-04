@@ -30,3 +30,23 @@ platforms/
 *.swp
 .idea/
 .vscode/
+
+# State and session data — one machine's runtime, never the skeleton
+*.db
+*.db-wal
+*.db-shm
+*.key
+*.pem
+.env.lock
+auth.json
+state/
+cron/
+desktop/
+bot_relay/
+logs/
+*.log
+.skills_prompt_snapshot.json
+
+# The FILLED map is a statement about one machine; only the template ships.
+# (Uncomment if you keep your filled map in this working tree while exporting.)
+# ecosystem-map.md
