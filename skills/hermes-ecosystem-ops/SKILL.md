@@ -244,6 +244,16 @@ result.
   `IdentitiesOnly yes`, or you get `Permission denied (publickey)` for a key that is correctly registered.
 
 
+## Explaining the harness to its user
+
+- **When an explanation fails twice, stop explaining and show the artifact.** If the user still does not
+  understand after re-reading, the problem is abstraction, not attention: run the script, print the real
+  output, open the rendered page, and describe *that*.
+- **Confusion about mechanism is usually confusion about tiers.** Name what loads every turn, what is
+  generated per session, and what is fetched on demand — explicitly — instead of restating how it works.
+- **Distinguish a choice by one concrete event, not by category labels.** "You add a status — what
+  happens on each path?" splits two options that read as synonyms until an event separates them.
+
 ## Extending the harness
 
 - **Plugins** register hooks from `register(ctx)`; hook callbacks receive keyword args and should accept `**kwargs`. Observer hooks are fail-open — never let a plugin raise into the agent loop. Verify hook names against `hermes_cli.plugins.VALID_HOOKS`.

@@ -44,4 +44,5 @@ own	registry/SCHEMA.md	-
 own	registry/board.md	-
 own	registry/projects.md	-
 own	registry/inbox/README.md	-
+own	docs/JOURNEY.md	-
 own	hooks/pre-commit	-

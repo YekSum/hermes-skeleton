@@ -7,6 +7,15 @@ Take this repo to another machine, run one script, and you get the same shape:
 an orchestrator profile plus specialists, a single-writer registry/board, a
 delegation topology, a documented harness map, and a deterministic checker.
 
+## Getting started (designed, not yet built)
+
+The intended path is written up in **[`docs/JOURNEY.md`](docs/JOURNEY.md)**: `git clone` → one script to
+set the provider key and model → one command to open the interview → a green `map_check` → a first real
+task → optionally the desktop app.
+
+It is a design document, not a feature. Today the working path is `./bootstrap.sh --dry-run`, then
+without the flag, then fill in `ecosystem-map.md` and each profile's `Personalize` block by hand.
+
 ## What ships
 
 | Path | What it is |
