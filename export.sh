@@ -108,6 +108,20 @@ case "$MODE" in
     ;;
 
   --accept)
+    # Refuse to record hashes of files that do not exist. A stale HERMES_HOME in the shell (a trial
+    # run, a second profile) silently turned every source into "missing", and the lock was rewritten
+    # with hashes of nothing — which is worse than no lock, because it looks like a review happened.
+    missing=0
+    for i in "${!C[@]}"; do
+      [ "${C[$i]}" = "own" ] && continue
+      [ -f "${L[$i]}" ] || { echo "✗ live source missing for ${R[$i]}: ${L[$i]}"; missing=1; }
+    done
+    if [ "$missing" = "1" ]; then
+      echo
+      echo "✗ refusing to write the lock. HERMES_HOME is currently: $HERMES_HOME"
+      echo "  Unless that is deliberate, unset it and re-run."
+      exit 2
+    fi
     [ -f "$LOCK" ] && cp "$LOCK" "$LOCK.bak"
     : > "$LOCK"
     for i in "${!C[@]}"; do

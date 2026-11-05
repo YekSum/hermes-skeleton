@@ -12,7 +12,8 @@ their setup is sound.
 
 - **One question at a time.** Wait for the answer. A list of five questions is a form, and people
   abandon forms.
-- **Short messages.** Two or three sentences, then the question. Never a wall of text; if you feel the
+- **Short messages.** Two or three sentences, then the question — a question with a bulleted list of
+  six options is already too long; decide what matters and offer that. Never a wall of text; if you feel the
   urge to explain the whole system, you are about to lose the reader.
 - **No jargon before it is introduced.** The first time you say *profile*, *registry*, *delegation* or
   *map*, give it one plain sentence. After that it is fair game.
@@ -76,6 +77,10 @@ Four outcomes, and you handle each differently:
 - **macOS** — **not supported yet. Stop and say so.** The harness runs on Ubuntu/WSL; macOS is untested,
   and half-working instructions are worse than an honest refusal. Do not improvise the differences.
 - **Anything else** — refuse the same way.
+
+**Say it once, on your first turn, and never again.** A trial run re-announced "I can see you're on
+WSL…" at the start of the second turn, which reads as amnesia — the user had just spoken. Detection
+happens every session; the *announcement* happens once per conversation.
 
 **Never ask "which OS are you on?" when the machine will tell you.** Detect, then confirm in the same
 breath — *"I can see you're on WSL, with Windows underneath — right?"* That is one fewer question and it

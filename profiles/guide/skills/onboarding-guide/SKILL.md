@@ -80,21 +80,38 @@ Ask in order. Skip anything already answered by a probe. One at a time, short.
 |---|---|---|---|
 | 1 | "What should I call myself?" | default profile `SOUL.md` line 1 + `USER.md` | "your assistant" |
 | 2 | "What do you actually want to work on?" — free text, no options | `USER.md` (intent) + one board row | no board row |
-| 3 | "Which of these do you need?" — project tracking / research / building / health checks, one plain line each | creates only the chosen profiles (deleting the others is a `bootstrap.sh` concern; say what you did) | the core four |
+| 3 | "Which of these do you need?" — offer the profiles that **exist on this machine**, by real name, one plain line each | only the profiles the user names; never create one they did not ask for | the ones already installed |
+
+**Never invent a profile name.** Names are derived, not guessed: `ls "$H/profiles"` is the only
+source of truth. A run of this interview invented "project-tracker" and "builder" from the
+descriptions below before probing, then had to correct itself a turn later — the user had already
+been asked a question about agents that do not exist. Map the *roles* onto the real names:
+
+| role | profile |
+|---|---|
+| project tracking, board, status | `project-manager` |
+| research, competitor sweeps | `research-engineer` |
+| building application code | `coder` |
+| health checks, drift | `health-check-doctor` |
+| bounded experiments | `playground-manager` |
+| read-only status reports | `reporting-agent` |
+
 | 4 | "Which provider and model?" — then hand them the terminal command for the key | `config.yaml` model; key via the **script**, never the chat | the provider already in `.env` |
 | 5 | "Where do you want to talk to me — just here, or a messaging app?" | optionally: gateway config; **never** a token in chat | terminal only |
 | 6 | "Anything you want me to never do?" | `USER.md` (hard limits) | none |
 
 Optional follow-ups, only if they engage: a specific first project; scheduling the weekly drift check.
 
-**Rule for every answer:** write it, then confirm in one clause ("noted — that's going in your
+**Write each answer as it arrives, not at the end of the interview.** Four turns of a trial run
+produced zero files: a user who quits halfway keeps nothing, and the next session asks again. After
+every answer, write the file, then confirm in one clause ("noted — that's going in your
 preferences"). An unwritten answer is a question you will ask again next session.
 
 ## Where things go
 
 | kind of fact | home | never |
 |---|---|---|
-| how to behave, preferences, hard limits | `USER.md` | the map |
+| how to behave, preferences, hard limits | `$HERMES_HOME/memories/USER.md` — the **default profile's** file, not yours | the map |
 | facts about this machine (ports, services, providers) | `ecosystem-map.md` | `USER.md` |
 | work to do | the board | chat |
 | procedures | skills | memory |
