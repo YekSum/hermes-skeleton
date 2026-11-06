@@ -187,11 +187,11 @@ elif [ ! -t 0 ] || [ ! -t 1 ]; then
   GUIDE_READY=0; GUIDE_SKIP="Not a terminal — a piped run must never hang waiting for a conversation."
 elif [ ! -d "$HERMES_HOME/profiles/$GUIDE_PROFILE" ]; then
   GUIDE_READY=0; GUIDE_SKIP="No '$GUIDE_PROFILE' profile installed yet, so there is nothing to talk to."
-elif ! grep -qE '^[A-Z_]*(_API_KEY|_TOKEN|_KEY)=.+' "$HERMES_HOME/profiles/$GUIDE_PROFILE/.env" 2>/dev/null \
-     && ! grep -qE '^[A-Z_]*(_API_KEY|_TOKEN|_KEY)=.+' "$HERMES_HOME/.env" 2>/dev/null; then
-  # A conversation needs a model, and a model needs a key. Launching into an auth error is not a
-  # first-run experience, it is a bug report.
-  GUIDE_READY=0; GUIDE_SKIP="No API key yet — run ./setup.sh (provider, key, model), then re-run bootstrap."
+elif ! grep -qE '^[A-Z_]*(_API_KEY|_TOKEN|_KEY)=.+' "$HERMES_HOME/profiles/$GUIDE_PROFILE/.env" 2>/dev/null; then
+  # The guide's OWN .env, not the default profile's: profiles do not inherit it. A trial run launched
+  # straight into "set OPENROUTER_API_KEY in your environment" because this check accepted the default
+  # profile's key — an auth error dressed as a first-run experience is just a bug report.
+  GUIDE_READY=0; GUIDE_SKIP="The guide profile has no API key yet — run ./setup.sh (it writes the key to the guide's own .env; profiles do not inherit the default one)."
 elif ! hermes -p "$GUIDE_PROFILE" config get model >/dev/null 2>&1; then
   GUIDE_READY=0; GUIDE_SKIP="No model configured for '$GUIDE_PROFILE'."
 fi

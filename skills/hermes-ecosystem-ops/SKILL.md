@@ -249,6 +249,18 @@ result.
   a page of instructions. Guard the hand-over: never launch on a non-TTY (a piped run would hang
   forever), honour a `--no-launch` flag, and report a missing profile or model instead of opening a
   session that cannot answer.
+- **Never let the interview name a profile from memory.** Probe `ls "$HERMES_HOME/profiles"` and offer the
+  real names, mapped onto roles the user recognises. A trial run invented "project-tracker" /
+  "research-analyst" / "builder" from the role descriptions, asked which they wanted, and only then
+  discovered the real profiles — so the user had already answered a question about agents that do not
+  exist. Names are derived, never guessed.
+- **Persist each answer as it arrives, not at the end.** Four turns of a trial produced zero files: no
+  `USER.md`, no board row. Writes deferred to an unspecified "end" mean a user who stops halfway keeps
+  none of their answers, and the next session asks again. Write immediately after each reply, and spell
+  out the absolute target — the guide's own profile home is not the user's home.
+- **Announce a derived fact once per conversation, not once per turn.** Detection runs every session; a
+  second "I can see you're on WSL…" immediately after the user has spoken reads as amnesia.
+
 ## Packaging the harness as a skeleton
 
 - **The test is purpose, not secrecy.** Ship a file if it is needed to rebuild the *shape* on a fresh
