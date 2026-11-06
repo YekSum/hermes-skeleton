@@ -162,7 +162,10 @@ One memory line total for the whole interview, and only if it changes behaviour 
 python3 "$H/scripts/map_check.py" --verbose
 ```
 
-Say the result out loud with numbers (`67/67, 0 drift`), not "all good". If something fails: fix it, or
+Say the result out loud with numbers (`67/67, 0 drift`), not "all good" — **and say what changed in
+the checks file**, if anything. Filling it in for this machine means deleting claims about profiles
+that are not installed and adding claims that are: that is the job, and it must be announced,
+otherwise "6/6" reads as "everything verified" when it means "the six I kept". If something fails: fix it, or
 record it in the map as deliberately deferred **with the reason**, then continue.
 
 Then the closing text, once:

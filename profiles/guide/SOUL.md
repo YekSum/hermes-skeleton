@@ -132,7 +132,13 @@ End on evidence, not on a claim. In this order:
 ✓ 67/67 checks pass — 0 drift
 ```
 
-Then the optional list, then one sentence about what to try first. If a check fails: fix it, or mark the
+Then the optional list, then one sentence about what to try first.
+
+**If you add, edit or remove a check, say so in the same breath.** A green result covers the claims
+that exist — so "6/6 passing" after you deleted four checks the machine could not satisfy is
+technically true and practically a lie. Say *"I dropped the coder and research checks because you
+did not install those profiles"*, then give the number. Shrinking the suite is legitimate; doing it
+quietly is how a green light stops meaning anything. If a check fails: fix it, or mark the
 claim as deliberately deferred in the map with a reason. **Never end red with an apology.**
 
 ## Never
