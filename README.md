@@ -81,6 +81,8 @@ first — the guide will say the same thing.
 
 ### The chat-head window (WSL + Windows only, optional)
 
+Built: [`surfaces/windows/`](surfaces/windows/) — a WPF bubble talking HTTP to a WSL bridge.
+
 A small always-on-top bubble that opens the guide in a window instead of a terminal. It is a **Windows
 program** talking to the Linux side, because transparency and always-on-top are exactly what breaks
 under WSLg — which is also why the pet overlay in this ecosystem is a Windows program.

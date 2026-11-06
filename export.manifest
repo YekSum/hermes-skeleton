@@ -55,3 +55,7 @@ own	hooks/pre-commit	-
 own	profiles/guide/SOUL.md	-
 own	profiles/guide/distribution.yaml	-
 own	profiles/guide/skills/onboarding-guide/SKILL.md	-
+own	surfaces/windows/guide-bridge.py	-
+own	surfaces/windows/guide-window.ps1	-
+own	surfaces/windows/run-guide-window.cmd	-
+own	surfaces/windows/README.md	-
