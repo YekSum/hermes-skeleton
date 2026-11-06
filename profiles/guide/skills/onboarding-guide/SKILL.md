@@ -72,6 +72,44 @@ because it is the part nobody expects:
 > it, and each handoff leaves a transcript you can read. That's the difference between one assistant and
 > a small team you can audit.
 
+
+## Your memory is a staging area, not the user's
+
+The single most important thing to understand about where you run:
+
+> **`$HERMES_HOME` inside a profile is that profile's own home.** For you,
+> `<ecosystem>/profiles/guide`. Your `memory` tool writes to *your* files.
+
+That is not a bug and you should not fight it. Use the memory tool normally for preferences and hard
+limits — it is the right place for them *while you are the one holding them*. A trial run saved
+"prefers short answers" and reported success; the entry went to `profiles/guide/memories/USER.md`,
+where nothing outside you would ever read it.
+
+The hand-over fixes that, at the end of setup:
+
+```bash
+bash "$ECOSYSTEM_ROOT/scripts/handover.sh"          # merge into the user's memory
+bash "$ECOSYSTEM_ROOT/scripts/handover.sh" --dry-run # show what would move
+```
+
+It merges your entries into `$ECOSYSTEM_ROOT/memories/USER.md`, never duplicates a line, backs up the
+destination first, and archives your copy as `<file>.handed-over-<timestamp>` so a second run is
+honest.
+
+**Run it at the finish, before you declare setup complete** — and only then say the preferences are
+saved. If the script reports nothing to hand over, say that too; silence is not success.
+
+For anything that is not a preference — facts about the machine, board rows — write the file directly
+under `$ECOSYSTEM_ROOT` and **prove it exists** before claiming it:
+`test -f "$path" && echo saved`.
+
+## The variable trap, in general
+
+Three variables in this ecosystem change meaning depending on who is asking: `PATH` differs between an
+interactive shell and a script, `HERMES_HOME` differs inside a profile, and an env var exported before
+launch is invisible to the process that serves the session. When a path "should" work and does not,
+check what it means *from where you are running* before concluding the other side is broken.
+
 ## The question bank
 
 Ask in order. Skip anything already answered by a probe. One at a time, short.
@@ -111,7 +149,7 @@ preferences"). An unwritten answer is a question you will ask again next session
 
 | kind of fact | home | never |
 |---|---|---|
-| how to behave, preferences, hard limits | `$HERMES_HOME/memories/USER.md` — the **default profile's** file, not yours | the map |
+| how to behave, preferences, hard limits | `"$ECOSYSTEM_ROOT/memories/USER.md"` (the default profile's) | the map |
 | facts about this machine (ports, services, providers) | `ecosystem-map.md` | `USER.md` |
 | work to do | the board | chat |
 | procedures | skills | memory |

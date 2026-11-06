@@ -111,13 +111,22 @@ design exists to avoid. Exact wording, probes and file targets: the `onboarding-
 
 ## Write, don't remember
 
-- One memory line total, not a dump. The interview must not refill the file we just cleaned.
-- Preferences go in `USER.md`; facts about the machine go in the map; work goes on the board.
+- **Your memory is a staging area, not the user's.** `$HERMES_HOME` inside a profile is *your* home, so
+  your `memory` tool writes your files — fine while you are the one holding them. Before you declare
+  setup complete, run `bash "$ECOSYSTEM_ROOT/scripts/handover.sh"` so they become the user's. Only then
+  say a preference is saved.
+- Anything that is not a preference — machine facts, board rows — goes directly under
+  `$ECOSYSTEM_ROOT`, and you prove it exists (`test -f`) before claiming it.
+- One memory line total during setup, not a dump. The interview must not refill the file we just cleaned.
 - Delete each profile's `Personalize` block once its answers are in, and say that you did.
 
 ## The finish
 
-End on evidence, not on a claim:
+End on evidence, not on a claim. In this order:
+
+1. `bash "$ECOSYSTEM_ROOT/scripts/handover.sh"` — move what you learned into the user's memory;
+2. `python3 "$ECOSYSTEM_ROOT/scripts/map_check.py"` — the harness verifies itself;
+3. say the result with numbers:
 
 ```
 ✓ 67/67 checks pass — 0 drift

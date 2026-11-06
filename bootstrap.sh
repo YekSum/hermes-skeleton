@@ -117,6 +117,20 @@ if [ -d "$HERE/profiles/$GUIDE_PROFILE/skills" ]; then
   run "mkdir -p '$HERMES_HOME/profiles/$GUIDE_PROFILE/skills' && cp -r '$HERE/profiles/$GUIDE_PROFILE/skills/.' '$HERMES_HOME/profiles/$GUIDE_PROFILE/skills/'"
 fi
 
+# The guide runs with HERMES_HOME=<its own profile home>, so "$HERMES_HOME/memories/USER.md" is ITS
+# file, not the user's. Give it an unambiguous pointer by name; a trial run wrote preferences into
+# profiles/guide/USER.md, where nothing will ever read them.
+GUIDE_ENV="$HERMES_HOME/profiles/$GUIDE_PROFILE/.env"
+if [ "$DRY_RUN" != "1" ]; then
+  mkdir -p "$(dirname "$GUIDE_ENV")"; touch "$GUIDE_ENV"; chmod 600 "$GUIDE_ENV"
+  grep -q '^ECOSYSTEM_ROOT=' "$GUIDE_ENV" 2>/dev/null \
+    && sed -i "s|^ECOSYSTEM_ROOT=.*|ECOSYSTEM_ROOT=$HERMES_HOME|" "$GUIDE_ENV" \
+    || printf 'ECOSYSTEM_ROOT=%s\n' "$HERMES_HOME" >> "$GUIDE_ENV"
+  echo "  guide: ecosystem root recorded in its .env"
+else
+  echo "  [dry-run] would record ECOSYSTEM_ROOT=$HERMES_HOME in the guide's .env"
+fi
+
 # ── 3. Wire delegation ───────────────────────────────────────────────────────
 say "3. Delegation topology (profile_routes)"
 ROUTES_JSON='['
@@ -145,6 +159,7 @@ else
   run "cp '$HERE/map/ecosystem-map.checks.yaml' '$HERMES_HOME/ecosystem-map.checks.yaml'"
 fi
 run "mkdir -p '$HERMES_HOME/scripts' && cp '$HERE/map/scripts/map_check.py' '$HERMES_HOME/scripts/map_check.py'"
+run "cp '$HERE/scripts/handover.sh' '$HERMES_HOME/scripts/handover.sh' && chmod +x '$HERMES_HOME/scripts/handover.sh'"
 
 # ── 6. Credentials ───────────────────────────────────────────────────────────
 say "6. Credentials (you must fill these in)"
