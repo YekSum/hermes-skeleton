@@ -219,34 +219,35 @@ if [ "$GUIDE_READY" = "1" ]; then
 fi
 
 echo "  $GUIDE_SKIP"
-echo "  Start it when ready:  hermes -p $GUIDE_PROFILE chat -q hi"
+echo
 
-cat <<'EOF'
-Next steps:
+# The old tail dumped a six-item operator checklist. For someone who just wants a working assistant that
+# read as "nothing happened": no statement that the harness exists, no next step they could act on, and
+# no mention that --no-launch leaves the window as the intended first surface.
+ON_WSL=0
+grep -qiE 'microsoft|wsl' /proc/version 2>/dev/null && ON_WSL=1
+NP="$(ls -1 "$HERMES_HOME/profiles" 2>/dev/null | wc -l | tr -d ' ')"
+KD="$(ls -1 "$HERMES_HOME/profiles/$GUIDE_PROFILE/skills" 2>/dev/null | tr -d '\n' | sed 's/^$/none/')"
 
-  0. Personalize each profile SOUL: it ships with rules but no territory, and ends
-     with a "Personalize — required before use" block. Fill it in, delete the block.
-     A skeleton that arrives pre-filled is just someone else's habits.
-
-  1. Fill in credentials — each profile gets ONLY the keys it needs:
-       $EDITOR "$HERMES_HOME/.env"
-       $EDITOR "$HERMES_HOME/profiles/research-engineer/.env"   # etc.
-
-  2. Choose each profile's model (deliberately — the script won't guess):
-       hermes -p <profile> config get model.default
-
-  3. Set terminal isolation where you want it:
-       hermes -p research-engineer config set terminal.backend docker
-
-  4. Fill in the map and its checks for THIS machine:
-       $EDITOR "$HERMES_HOME/ecosystem-map.md"
-       $EDITOR "$HERMES_HOME/ecosystem-map.checks.yaml"
-
-  5. Verify the checker works, then wire it into a scheduled job:
-       python3 "$HERMES_HOME/scripts/map_check.py" --verbose
-
-  6. Restart the gateway so new skills/plugins are visible to fresh sessions.
-
-Read the hermes-ecosystem-ops skill before changing conventions — it explains
-why each one exists, including the failures that produced them.
-EOF
+echo "────────────────────────────────────────────────────────────────"
+echo " Setup finished. What now exists on this machine:"
+echo "   profiles   $NP under $HERMES_HOME/profiles"
+echo "   map        $HERMES_HOME/ecosystem-map.md  (+ .checks.yaml)"
+echo "   checker    $HERMES_HOME/scripts/map_check.py"
+echo "   guide      $HERMES_HOME/profiles/$GUIDE_PROFILE  (skills: $KD)"
+echo
+if [ "$ON_WSL" = "1" ]; then
+  echo " What next — the guide window:"
+  echo "   Double-click start.cmd in the repo folder, or run:"
+  echo "     surfaces\\windows\\run-guide-window.cmd"
+  echo "   It opens a bubble near the bottom-right; clicking it starts the conversation."
+  echo "   Terminal version, if you prefer:  hermes -p $GUIDE_PROFILE chat -q hi"
+else
+  echo " What next — start the conversation:"
+  echo "   hermes -p $GUIDE_PROFILE chat -q hi"
+fi
+echo
+echo " Not required, but documented in docs/JOURNEY.md (stage 4): personalizing"
+echo " each SOUL, per-profile keys, Docker isolation for research, the weekly"
+echo " drift check. The harness works without any of it."
+echo "────────────────────────────────────────────────────────────────"

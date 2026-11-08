@@ -75,6 +75,11 @@ Guards on the hand-over, each learned from a way it goes wrong:
 
 ## Stage 0 — prerequisites (README, copy-paste only)
 
+**Windows users start here:** double-click `start.cmd` instead of running the scripts by hand. Windows
+does not associate `.sh` files, so double-clicking one opens an "how do you want to open this file?"
+dialog — and PowerShell is the wrong shell for them too. `start.cmd` resolves the WSL distro, runs both
+scripts inside WSL in a visible window, then opens the guide window.
+
 Two things must already be true, and the README says them in two lines:
 
 1. Hermes Agent is installed and `hermes --version` works.

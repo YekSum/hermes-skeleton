@@ -21,14 +21,44 @@ hermes cron create "0 9 * * 1" --name "Weekly drift check" \
 prints one line. Details, the upgrade path to an interpreted report, and why this ships as a spec
 rather than an exported job: [`cron/weekly-drift-check.job.md`](cron/weekly-drift-check.job.md).
 
-## Getting started (designed, not yet built)
+## Quickstart
 
-The intended path is written up in **[`docs/JOURNEY.md`](docs/JOURNEY.md)**: `git clone` → one script to
-set the provider key and model → one command to open the interview → a green `map_check` → a first real
-task → optionally the desktop app.
+### Windows + WSL — the path with a window
 
-It is a design document, not a feature. Today the working path is `./bootstrap.sh --dry-run`, then
-without the flag, then fill in `ecosystem-map.md` and each profile's `Personalize` block by hand.
+**Double-click `start.cmd`.** It runs everything inside WSL in one window (provider and key, profiles,
+checks), then opens the guide as a floating bubble near the bottom-right of the screen. Four numbered
+steps, about two minutes, and it stops with a reason if any step fails.
+
+> **Never run the `.sh` files from PowerShell, and never double-click them.** Windows does not know what
+> a `.sh` file is, so it asks you to pick an app to open it with — Notepad is not it. Everything runs
+> *inside* WSL. If you see an "How do you want to open this file?" dialog, you are on the wrong side of
+> the wall.
+
+Prerequisite: WSL2 with Ubuntu. In an admin PowerShell: `wsl --install -d Ubuntu`, then reboot.
+
+### Ubuntu / Linux — the terminal path
+
+```bash
+git clone git@github.com:<owner>/hermes-skeleton.git
+cd hermes-skeleton
+./setup.sh            # provider + API key (verified with a live call before it is saved)
+./bootstrap.sh        # profiles, delegation, map, then the guide conversation
+```
+
+### What you should see
+
+| step | what it looks like | time |
+|---|---|---|
+| setup | a numbered provider list, one key prompt, then `key verified` and the models it can see | ~1 min, one thing to type |
+| bootstrap | a numbered section per step, one line per profile created, then a **Setup finished** box listing what now exists and what to do next | ~1 min |
+| the guide | a blue bubble bottom-right (Windows) or the first interview question (terminal) | instant |
+
+Nothing here is silent: every step prints what it did, and a failure stops the run instead of leaving
+you with a half-configured harness.
+
+**Afterwards**, the full customization checklist — personalizing each SOUL, per-profile keys, Docker
+isolation, the weekly drift check — is [`docs/JOURNEY.md`](docs/JOURNEY.md) stage 4. None of it is
+required for the harness to work.
 
 ## What ships
 
@@ -41,13 +71,16 @@ without the flag, then fill in `ecosystem-map.md` and each profile's `Personaliz
 | `map/ecosystem-map.template.md` | The "README for Hermes" — structure to fill in for your machine |
 | `map/ecosystem-map.checks.yaml` | Claims paired with the commands that prove them |
 | `map/scripts/map_check.py` | The deterministic, no-LLM checker |
-| `bootstrap.sh` | Creates the profiles, wires delegation, installs the skill |
+| `start.cmd` | **Windows entry point.** Runs the whole setup inside WSL, then opens the guide window |
+| `setup.sh` | Provider + key, verified before saving. The only place a credential is typed |
+| `bootstrap.sh` | Creates the profiles, wires delegation, installs the skill, hands over to the guide |
 | `.env.template` | Which credentials each profile needs |
 | `SANITIZE.md` | Exactly what was stripped from the source setup, and why |
 | `cron/weekly-drift-check.sh` | Deterministic weekly drift check — no LLM, zero tokens |
 | `cron/weekly-drift-check.job.md` | The job **spec** (install it yourself; nothing writes your `jobs.json`) |
 | `registry/` | Board/project schema, empty templates, and the inbox contract |
-| `docs/JOURNEY.md` | The intended onboarding journey — design, not yet built |
+| `surfaces/windows/` | The guide window: WPF bubble + WSL bridge (`guide-bridge.py`) |
+| `docs/JOURNEY.md` | The onboarding journey: stages, platform matrix, and the answers behind them |
 
 ## What deliberately does NOT ship
 
