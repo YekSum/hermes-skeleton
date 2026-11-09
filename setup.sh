@@ -85,6 +85,19 @@ fi
 
 CONF_PROVIDER="$(hermes -p default config get model.provider 2>/dev/null | head -1)"
 CONF_KEY="$(keyname_for "$CONF_PROVIDER")"
+
+# Reuse a key that already exists on this machine.
+# If Hermes' own setup wizard (or a previous run) already put the key in the ecosystem .env, asking for
+# it again is busywork: the user picked a provider, pasted the key once, and now a script wants it twice.
+# Profiles do not inherit the ecosystem .env, so the guide cannot see that key — copy it across instead.
+if [ "$MODE" != "check" ] && [ -n "$CONF_KEY" ] && src_has_key "$HERMES_HOME/.env" "$CONF_KEY" \
+   && ! src_has_key "$HERMES_HOME/profiles/$GUIDE_PROFILE/.env" "$CONF_KEY"; then
+  mkdir -p "$HERMES_HOME/profiles/$GUIDE_PROFILE"
+  touch "$HERMES_HOME/profiles/$GUIDE_PROFILE/.env"
+  grep -E "^$CONF_KEY=" "$HERMES_HOME/.env" | tail -1 >> "$HERMES_HOME/profiles/$GUIDE_PROFILE/.env"
+  chmod 600 "$HERMES_HOME/profiles/$GUIDE_PROFILE/.env"
+  ok "reused $CONF_KEY from $HERMES_HOME/.env — the guide profile does not inherit it, so it was copied"
+fi
 if src_has_key "$HERMES_HOME/.env" "$CONF_KEY" \
    && src_has_key "$HERMES_HOME/profiles/$GUIDE_PROFILE/.env" "$CONF_KEY" \
    && [ -n "$(hermes -p default config get model.default 2>/dev/null | head -1)" ] \

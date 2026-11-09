@@ -6,10 +6,14 @@ cd "$(git rev-parse --show-toplevel)"
 
 fail=0
 
-# 1. Installation identifiers anywhere in the tree (the bar in SHIPPING.md).
-if grep -rniEf .sanitize-patterns --exclude=.sanitize-patterns \
-      --exclude-dir=.git --exclude-dir=__pycache__ . ; then
-  echo "✗ refusing to commit: the tree contains installation identifiers (above)."
+# 1. Installation identifiers in what would actually be published (the bar in SHIPPING.md).
+# Tracked files only, not the whole working tree: a gitignored artifact cannot leak, and scanning the
+# working tree made this gate fail on fetched binaries (surfaces/windows/webview2/*.dll, 928 KB of
+# WebView2 assemblies that .gitignore already excludes). A gate that cries wolf gets bypassed, and then
+# it protects nothing. `grep -I` skips anything binary for the same reason.
+if git ls-files | grep -v '^\.sanitize-patterns$' \
+     | xargs -r -d '\n' grep -niIEf .sanitize-patterns ; then
+  echo "✗ refusing to commit: tracked files contain installation identifiers (above)."
   fail=1
 fi
 
