@@ -7,6 +7,7 @@ required for setup to work.
 ```
 surfaces/windows/
   guide-bridge.py       WSL side: HTTP on 127.0.0.1:8765, wraps `hermes -p guide chat`
+  start-bridge.ps1      starts the bridge DETACHED so it survives the launcher exiting
   guide-window.ps1      Windows side: PowerShell + WPF, the bubble and the panel
   run-guide-window.cmd  starts the bridge, then the window
 ```
@@ -54,8 +55,11 @@ To get it back after a real Quit, run `run-guide-window.cmd` again — or just `
 
 ## Troubleshooting
 
-- **A reply arrives as "(no answer — is guide-bridge.py running…)"** — the bridge is down. Start it,
-  then check `curl http://127.0.0.1:8765/health` from WSL.
+- **"bridge error: Unable to connect to the remote server"** — the bridge isn't running. `start-bridge.ps1`
+  prints `bridge: up` or `bridge: FAILED` with the exact command to run by hand. Its output, if it ran at
+  all, is in `/tmp/guide-bridge.log`.
+- **The bridge dies as soon as the launcher exits** — that is what `nohup … &` inside `wsl.exe` does;
+  WSL tears down the session. `start-bridge.ps1` starts a detached process instead.
 - **Nothing appears at all** — run the window from a terminal (drop `-WindowStyle Hidden`) to see the
   PowerShell error.
 - **Garbled characters where an em dash should be** (`â€”`) — the `.ps1` lost its UTF-8 BOM. Windows PowerShell 5.1 reads

@@ -115,7 +115,7 @@ echo.
 
 REM ---------- 4. the window ----------
 echo  [5/5] Starting the guide window...
-wsl.exe -d %DISTRO% -- bash -lc "cd %REPO% && if ! (ss -ltn 2>/dev/null | grep -q ':8765'); then nohup python3 surfaces/windows/guide-bridge.py > /tmp/guide-bridge.log 2>&1 & sleep 3; fi; ss -ltn 2>/dev/null | grep -q ':8765' && echo '       bridge: up' || echo '       bridge: FAILED - see /tmp/guide-bridge.log'"
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File "%~dp0surfaces\windows\start-bridge.ps1" -Distro %DISTRO% -Repo "%REPO%"
 start "" powershell.exe -NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File "%~dp0surfaces\windows\guide-window.ps1"
 
 echo.

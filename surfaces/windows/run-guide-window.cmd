@@ -1,18 +1,18 @@
 @echo off
-REM run-guide-window.cmd — start the guide window on Windows.
+REM run-guide-window.cmd - start the guide window on Windows.
 REM
-REM It does two things: starts guide-bridge.py inside WSL (if it is not already running), then opens
-REM the floating window. Nothing here needs administrator rights.
-REM
-REM Adjust WSL_DISTRO / WSL_REPO if your setup differs.
+REM Starts guide-bridge.py inside WSL, then opens the floating window. No admin rights needed.
+REM Nothing needs editing: start-bridge.ps1 works out the repo path from its own location.
 
 setlocal
 set WSL_DISTRO=Ubuntu
-REM path INSIDE WSL where you cloned the repo (tildes are fine here)
-set WSL_REPO=~/hermes-ecosystem-skeleton
 
 echo Starting the bridge in WSL...
-wsl.exe -d %WSL_DISTRO% -- bash -lc "if ! ss -ltn 2>/dev/null | grep -q ':8765'; then nohup python3 %WSL_REPO%/surfaces/windows/guide-bridge.py > /tmp/guide-bridge.log 2>&1 & sleep 2; fi; ss -ltn | grep -q ':8765' && echo bridge: up || echo bridge: FAILED (see /tmp/guide-bridge.log)"
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File "%~dp0start-bridge.ps1" -Distro %WSL_DISTRO%
+if errorlevel 1 (
+    echo.
+    echo   The window will still open, but it cannot answer until the bridge is up.
+)
 
 echo Opening the window...
 powershell.exe -NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File "%~dp0guide-window.ps1"

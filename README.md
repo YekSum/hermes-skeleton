@@ -124,7 +124,7 @@ instead of leaving you half-configured.
 | `hermes: command not found` | Hermes not installed / not on PATH | `bash scripts/preflight.sh` — it offers to install |
 | `RPC failed; HTTP 408` on clone | partial clone losing the connection | clone in full, see below |
 | `Temporary failure in name resolution`, PyPI timeouts | DNS, or a broken IPv6 route | test `curl -4 https://files.pythonhosted.org/`; prefer IPv4 |
-| `bridge error` in the window | the bridge isn't running | `curl http://127.0.0.1:8765/health` in WSL |
+| `bridge error` / "Unable to connect" | the bridge isn't running | `powershell -File surfaces\windows\start-bridge.ps1` — it reports up or FAILED with the command to run by hand |
 | bubble missing entirely | a PowerShell error, hidden by `-WindowStyle Hidden` | run `surfaces\windows\guide-window.ps1` from a terminal |
 | clicking the bubble does nothing | mouse gesture eaten by the drag logic | right-click it → **Open guide**, or double-click the head |
 
