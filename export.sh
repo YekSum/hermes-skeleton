@@ -99,8 +99,14 @@ case "$MODE" in
     ( cd "$STAGE" && find . -type f -print0 | while IFS= read -r -d '' f; do
         mkdir -p "$HERE/$(dirname "$f")"; cp "$f" "$HERE/$f"
       done )
-    if grep -rniEf "$PATTERNS" --exclude=.sanitize-patterns --exclude-dir=.git \
-         --exclude-dir=__pycache__ "$HERE" 2>/dev/null; then
+    # Scan only what this repo would actually publish: tracked files plus untracked ones that
+    # .gitignore does NOT exclude. A blanket `grep -r` over the tree also reads the FETCHED
+    # third-party binaries (surfaces/windows/webview2/, gitignored by design) and a binary can
+    # match a text pattern by accident -- which refused every export on a machine that had run
+    # the fetch step, with no way to tell that the "violation" was a DLL.
+    if ( cd "$HERE" && git ls-files --cached --others --exclude-standard -z \
+         | grep -zv '\.sanitize-patterns$' | grep -zv '__pycache__' \
+         | xargs -0 -r grep -niEf "$PATTERNS" ) 2>/dev/null; then
       echo "✗ the tree now trips the publication bar — inspect before committing"
       exit 2
     fi

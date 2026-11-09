@@ -91,3 +91,27 @@ there, so the repo is byte-for-byte this directory), with the viewer as
 Nothing here is machine-specific: `board-note.ps1` takes `-Base` (default
 `http://127.0.0.1:9130`), the `.cmd` uses `%~dp0`, and the installer reads the distro from its
 own UNC path.
+
+## Concurrent edits: why the viewer does not serve a torn board
+
+The board file is rewritten non-atomically (truncate, then write), so a read landing inside that
+window sees a *partial* board. Measured against a simulated concurrent writer: **27% of reads
+returned a board that never existed** (0 or 27 rows instead of 31).
+
+Three guards, and each was necessary — stat-before-and-after the read alone still left 14.7%,
+because a half-written file can rest unchanged for milliseconds:
+
+1. **Quiescence** — the file must be unchanged across a short window before its content is trusted.
+2. **Last-complete cache** — if the writer never pauses, the previous complete read is served and
+   flagged `stale`, so the note says "board is being rewritten" instead of showing a torn one.
+3. **Torn-prefix rule** — a fresh, shorter read that is a strict prefix of the last complete one is
+   a rewrite of the same bytes still in flight (a truncation landing on a line boundary passes every
+   cheap completeness test). A cold start has no last-good to compare against, so it retries harder.
+
+Result on the final code: **0 wrong reads in 3,300 reads** (11 consecutive runs of 300) under an
+adversarial rewriter. The single torn read ever seen after the guards went in came before the
+cold-start fix. Re-run the test after any change to the read path: `python3 scripts/board-race.py`.
+
+Because the note only ever *reads*, it cannot conflict with a writer — it reflects a change within
+one poll (15 s), and when the file is mid-rewrite it says so rather than showing a stale board as
+current.
