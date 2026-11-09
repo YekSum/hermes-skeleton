@@ -75,6 +75,14 @@ Guards on the hand-over, each learned from a way it goes wrong:
 
 ## Stage 0 — prerequisites (README, copy-paste only)
 
+Hermes itself is not shipped here. `start.cmd` step 1 runs `scripts/preflight.sh`, which checks the
+platform, git/curl, disk space and that github.com is reachable — then offers to run the official
+installer if `hermes` is missing. The installer is path-independent and resumes over an existing
+`~/.hermes/hermes-agent` checkout, so a retry after a flaky network continues rather than restarting.
+
+There is deliberately no device-tier detection: Linux and WSL are the same target, macOS is refused, and
+the installer acquires uv, Python and tool binaries itself. Anything more would be theatre.
+
 **Windows users start here:** double-click `start.cmd` instead of running the scripts by hand. Windows
 does not associate `.sh` files, so double-clicking one opens an "how do you want to open this file?"
 dialog — and PowerShell is the wrong shell for them too. `start.cmd` resolves the WSL distro, runs both

@@ -25,9 +25,10 @@ rather than an exported job: [`cron/weekly-drift-check.job.md`](cron/weekly-drif
 
 ### Windows + WSL — the path with a window
 
-**Double-click `start.cmd`.** It runs everything inside WSL in one window (provider and key, profiles,
-checks), then opens the guide as a floating bubble near the bottom-right of the screen. Four numbered
-steps, about two minutes, and it stops with a reason if any step fails.
+**Double-click `start.cmd`.** It runs everything inside WSL in one window — checking the machine,
+installing Hermes if it is missing, provider and key, profiles, checks — then opens the guide as a
+floating bubble near the bottom-right of the screen. Five numbered steps, and it stops with a reason if
+any step fails.
 
 > **Never run the `.sh` files from PowerShell, and never double-click them.** Windows does not know what
 > a `.sh` file is, so it asks you to pick an app to open it with — Notepad is not it. Everything runs
@@ -49,6 +50,7 @@ cd hermes-skeleton
 
 | step | what it looks like | time |
 |---|---|---|
+| preflight | `ok`/`FAIL` lines for platform, git, curl, disk, GitHub, Hermes — and if Hermes is missing it offers to install it, showing the exact command first | 0 s, or 3–5 min on first run |
 | setup | a numbered provider list, one key prompt, then `key verified` and the models it can see | ~1 min, one thing to type |
 | bootstrap | a numbered section per step, one line per profile created, then a **Setup finished** box listing what now exists and what to do next | ~1 min |
 | the guide | a blue bubble bottom-right (Windows) or the first interview question (terminal) | instant |
@@ -72,6 +74,7 @@ required for the harness to work.
 | `map/ecosystem-map.checks.yaml` | Claims paired with the commands that prove them |
 | `map/scripts/map_check.py` | The deterministic, no-LLM checker |
 | `start.cmd` | **Windows entry point.** Runs the whole setup inside WSL, then opens the guide window |
+| `scripts/preflight.sh` | Is this machine able to run Hermes — and if not, install it. Platform, prereqs, disk, network |
 | `setup.sh` | Provider + key, verified before saving. The only place a credential is typed |
 | `bootstrap.sh` | Creates the profiles, wires delegation, installs the skill, hands over to the guide |
 | `.env.template` | Which credentials each profile needs |

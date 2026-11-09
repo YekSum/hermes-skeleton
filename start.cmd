@@ -12,13 +12,13 @@ title Hermes skeleton - first run
 echo.
 echo  ===========================================================
 echo   HERMES SKELETON - SETUP
-echo   Four steps, about two minutes. You will be asked for an
-echo   API key in step 2. Nothing is installed globally.
+echo   Five steps. Step 1 may install Hermes (a few minutes, once).
+echo   Step 2 asks for an API key. Nothing is installed globally.
 echo  ===========================================================
 echo.
 
 REM ---------- 1. find a WSL distro ----------
-echo  [1/4] Looking for Ubuntu inside WSL...
+echo  [1/5] Looking for Ubuntu inside WSL...
 set "DISTRO="
 for %%d in (Ubuntu Ubuntu-24.04 Ubuntu-22.04 Ubuntu-20.04) do (
     if not defined DISTRO (
@@ -46,8 +46,21 @@ if not defined REPO (
 echo        ok - repo seen from WSL as %REPO%
 echo.
 
-REM ---------- 2. provider + key ----------
-echo  [2/4] Provider and API key.
+REM ---------- 2. check / install Hermes ----------
+echo  [2/5] Checking Hermes (installs it on first run)...
+echo.
+wsl.exe -d %DISTRO% --cd "%REPO%" -- bash -lc "bash scripts/preflight.sh --install"
+if errorlevel 1 (
+    echo.
+    echo        X Hermes is not installed and could not be installed.
+    echo          The reason is in the lines above, with the recovery steps.
+    pause
+    exit /b 1
+)
+echo.
+
+REM ---------- 3. provider + key ----------
+echo  [3/5] Provider and API key.
 echo        This verifies the key with a live call before saving it.
 echo.
 wsl.exe -d %DISTRO% --cd "%REPO%" -- bash -lc "./setup.sh"
@@ -62,7 +75,7 @@ echo        ok - provider and key saved
 echo.
 
 REM ---------- 3. profiles ----------
-echo  [3/4] Creating profiles, wiring delegation, installing the guide...
+echo  [4/5] Creating profiles, wiring delegation, installing the guide...
 echo.
 wsl.exe -d %DISTRO% --cd "%REPO%" -- bash -lc "./bootstrap.sh --no-launch"
 if errorlevel 1 (
@@ -76,7 +89,7 @@ echo        ok - harness created
 echo.
 
 REM ---------- 4. the window ----------
-echo  [4/4] Starting the guide window...
+echo  [5/5] Starting the guide window...
 wsl.exe -d %DISTRO% -- bash -lc "cd %REPO% && if ! (ss -ltn 2>/dev/null | grep -q ':8765'); then nohup python3 surfaces/windows/guide-bridge.py > /tmp/guide-bridge.log 2>&1 & sleep 3; fi; ss -ltn 2>/dev/null | grep -q ':8765' && echo '       bridge: up' || echo '       bridge: FAILED - see /tmp/guide-bridge.log'"
 start "" powershell.exe -NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File "%~dp0surfaces\windows\guide-window.ps1"
 

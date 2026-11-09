@@ -35,6 +35,7 @@ own	SHIPPING.md	-
 own	SANITIZE.md	-
 own	bootstrap.sh	-
 own	setup.sh	-
+own	scripts/preflight.sh	-
 own	start.cmd	-
 own	scripts/handover.sh	-
 own	export.sh	-

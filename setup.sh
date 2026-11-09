@@ -23,6 +23,14 @@ say() { printf '\n%s\n' "$*"; }
 ok()  { printf '  ✓ %s\n' "$*"; }
 bad() { printf '  ✗ %s\n' "$*" >&2; }
 
+# ── is Hermes here, and can it be installed here? ─────────────────────────────
+# setup.sh used to assume `hermes` existed and fall over on the first `hermes config get`. A lazy pack
+# checks, and offers to fix it, instead of handing the user a documentation link.
+if ! bash "$HERE/scripts/preflight.sh" $([ "$MODE" = "check" ] && echo "--check"); then
+  bad "preflight did not pass — nothing was changed."
+  exit 1
+fi
+
 # ── current state ────────────────────────────────────────────────────────────
 keyname_for() {  # provider -> the env var that carries it
   case "$1" in
