@@ -88,12 +88,22 @@ checks:
     check: "grep -c '^OPENROUTER_API_KEY=' \"$HERMES_HOME/.env\" 2>/dev/null"
     expect: ["1"]
 
+  # ── worked example: a live viewer agrees with its source ──────────────────
+  # The pattern to copy for any "view it without asking" page: assert the viewer's
+  # record count EQUALS the source's, never a pinned total. A hardcoded number flaps
+  # to DRIFT every time the data legitimately grows, which trains you to ignore it.
+  - id: viewer.matches_source
+    claim: "the live viewer serves the same record count as the file it reads"
+    check: 'a=$(grep -cE "^\| [A-Z]{2}-[0-9]+ " "$HERMES_HOME/profiles/project-manager/workspace/registry/board.md"); b=$(curl -s --max-time 5 http://127.0.0.1:<YOUR_PORT>/board.json | python3 -c "import json,sys;print(len(json.load(sys.stdin)[\"items\"]))" 2>/dev/null); [ "$a" -ge 1 ] 2>/dev/null && [ "$a" = "$b" ] && echo "consistent:$a rows"'
+    expect: []
+    expect_regex: ["^consistent:[0-9]+ rows$"]
+
   # ── self-consistency: the map's advertised count matches this file ────────
   # Catches the map going stale about its own tooling. Update both together.
   - id: meta.checks.count
     claim: "the map's advertised check count matches this file"
     check: 'n=$(grep -c "^  - id:" "$HERMES_HOME/ecosystem-map.checks.yaml"); m=$(grep -oE "[0-9]+ no-LLM checks" "$HERMES_HOME/ecosystem-map.md" | head -1 | grep -oE "^[0-9]+"); [ "$n" = "$m" ] && echo "consistent:$n"'
-    expect: ["consistent:9"]
+    expect: ["consistent:10"]
 
   # ── TODO: add checks for the claims that matter on YOUR machine ───────────
   # Good candidates: service liveness, docker containers, scheduled-job count,

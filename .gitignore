@@ -59,3 +59,9 @@ logs/
 
 # export.sh backs the lock up before rewriting it — never commit the backup
 .export-lock.bak
+
+# WebView2 assemblies are FETCHED (surfaces/windows/fetch-webview2.sh), never shipped: they are
+# third-party binaries, and the publish bar has no opinion about them — without this rule a
+# `git add -A` would commit ~1 MB of them. Scoped to the fetched directory only; every other
+# file in surfaces/windows/ is meant to ship.
+surfaces/windows/webview2/

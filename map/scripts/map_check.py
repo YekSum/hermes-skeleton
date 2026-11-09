@@ -18,6 +18,9 @@ Usage:
 Design rules:
   * Never raises on a failing check — a check that errors is reported as drift
     with the error text, not a crash.
+  * Each check passes if stdout matches any entry of `expect` (literal) OR any of
+    `expect_regex` (regex). Use `expect_regex` when correct output legitimately varies
+    with the data — pinning such a value as a literal makes a healthy system drift.
   * Output ordering is fixed (file order) and no timestamps are printed, so an
     unchanged system yields byte-identical output.
   * Exit code is 0 by default so a cron runner never treats drift as a job failure.
@@ -36,6 +39,7 @@ from __future__ import annotations
 
 import argparse
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -155,9 +159,21 @@ def main() -> int:
         claim = c.get("claim", "")
         cmd = c.get("check", "")
         expect = [str(e) for e in (c.get("expect") or [])]
+        expect_re = [str(e) for e in (c.get("expect_regex") or [])]
 
         observed, err = run_check(cmd)
-        ok = (observed in expect) if not err else False
+        # `expect` matches literally; `expect_regex` exists for checks whose correct
+        # output legitimately VARIES (e.g. "same row count as the file", where a
+        # hardcoded total would flap the moment the board grows). A regex asserts the
+        # SHAPE of a correct answer without pinning a number that changes for good reasons.
+        ok = (
+            err is None
+            and bool(cmd)
+            and (
+                observed in expect
+                or any(re.search(rx, observed) for rx in expect_re)
+            )
+        )
 
         if ok:
             passed += 1
@@ -165,10 +181,11 @@ def main() -> int:
         else:
             drifted += 1
             shown = observed if not err else f"<error: {err}>"
+            want = expect + [f"/{r}/" for r in expect_re]
             drift_lines.append(
-                f"DRIFT  {cid:28} claim={claim!r} expected={expect} actual={shown!r}"
+                f"DRIFT  {cid:28} claim={claim!r} expected={want} actual={shown!r}"
             )
-            verbose_lines.append(f"DRIFT  {cid:28} expected={expect} actual={shown!r}")
+            verbose_lines.append(f"DRIFT  {cid:28} expected={want} actual={shown!r}")
 
     total = len(checks)
 

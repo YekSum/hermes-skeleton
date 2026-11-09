@@ -14,6 +14,20 @@ copy	scripts/brief.py	$HERMES_HOME/scripts/brief.py
 copy	plugins/session-brief/__init__.py	$HERMES_HOME/plugins/session-brief/__init__.py
 copy	plugins/session-brief/plugin.yaml	$HERMES_HOME/plugins/session-brief/plugin.yaml
 copy	map/scripts/map_check.py	$HERMES_HOME/scripts/map_check.py
+# Live board viewer + its concurrency regression test (reads board.md on every request).
+copy	scripts/board_server.py	$HERMES_HOME/scripts/board_server.py
+copy	scripts/board-race.py	$HERMES_HOME/scripts/board-race.py
+# The desktop note surface. `copy` (not `own`) so the repo and the installed copy cannot drift:
+# the installed home is $HERMES_HOME/surfaces/windows, so the live path is expressible.
+# fetch-webview2.sh and README.md stay `own` -- the first is repo-only tooling, the second
+# documents both surfaces in this directory.
+copy	surfaces/windows/board-note.ps1	$HERMES_HOME/surfaces/windows/board-note.ps1
+copy	surfaces/windows/run-board-note.cmd	$HERMES_HOME/surfaces/windows/run-board-note.cmd
+copy	surfaces/windows/install-startup.ps1	$HERMES_HOME/surfaces/windows/install-startup.ps1
+copy	surfaces/windows/wv2-selftest.ps1	$HERMES_HOME/surfaces/windows/wv2-selftest.ps1
+copy	surfaces/windows/screenshot.ps1	$HERMES_HOME/surfaces/windows/screenshot.ps1
+copy	surfaces/windows/test-launch.ps1	$HERMES_HOME/surfaces/windows/test-launch.ps1
+copy	surfaces/windows/board-note.md	$HERMES_HOME/surfaces/windows/board-note.md
 
 # ── manual: derived, needs judgement, cannot be regenerated safely ──────────
 # SOULs are the live file with personal territory removed + a Personalize block.
@@ -25,7 +39,7 @@ manual	profiles/project-manager/SOUL.md	$HERMES_HOME/profiles/project-manager/SO
 manual	profiles/reporting-agent/SOUL.md	$HERMES_HOME/profiles/reporting-agent/SOUL.md
 manual	profiles/research-engineer/SOUL.md	$HERMES_HOME/profiles/research-engineer/SOUL.md
 # The public checks file is a 9-claim template; the live one is 66 machine claims.
-manual	map/ecosystem-map.checks.yaml	$HERMES_HOME/ecosystem-map.checks.yaml
+own	map/ecosystem-map.checks.yaml	-
 # The public skill is a redacted copy; the live one carries private context.
 manual	skills/hermes-ecosystem-ops/SKILL.md	$HERMES_HOME/skills/hermes-ecosystem-ops/SKILL.md
 
@@ -61,3 +75,4 @@ own	surfaces/windows/guide-bridge.py	-
 own	surfaces/windows/guide-window.ps1	-
 own	surfaces/windows/run-guide-window.cmd	-
 own	surfaces/windows/README.md	-
+own	surfaces/windows/fetch-webview2.sh	-
