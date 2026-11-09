@@ -93,6 +93,7 @@ $minimize  = $win.FindName("Minimize")
 $script:expanded = $false
 $script:downPoint = $null
 $script:dragged = $false
+$script:pressed = $false
 
 function Set-Expanded([bool]$on) {
     $script:expanded = $on
@@ -178,15 +179,30 @@ function Send-Text {
 }
 
 # ── window behaviour ────────────────────────────────────────────────────────
+# A click and a drag start identically. The old version called DragMove on button-down, which blocks
+# until the button is released and then marked the gesture as a drag — so every click on the bubble was
+# swallowed and the panel never opened. Drag is now decided in MouseMove, once the pointer has actually
+# travelled, and a press that never moves is a click.
 $win.Add_MouseLeftButtonDown({
-    $script:downPoint = $_.GetPosition($win)
+    $script:pressed = $true
     $script:dragged = $false
-    if (-not $script:expanded) { $win.DragMove(); $script:dragged = $true }
+    $script:downPoint = $_.GetPosition($win)
 })
 
-$head.Add_MouseLeftButtonUp({
-    if ($script:dragged) { return }          # a drag is not a click
-    Set-Expanded $true
+$win.Add_MouseMove({
+    if (-not $script:pressed -or $script:dragged) { return }
+    $p = $_.GetPosition($win)
+    if ([math]::Abs($p.X - $script:downPoint.X) -gt 4 -or
+        [math]::Abs($p.Y - $script:downPoint.Y) -gt 4) {
+        $script:dragged = $true
+        try { $win.DragMove() } catch { }     # never let a drag error swallow the window
+    }
+})
+
+$win.Add_MouseLeftButtonUp({
+    $script:pressed = $false
+    if ($script:dragged) { return }           # a drag is not a click
+    if (-not $script:expanded) { Set-Expanded $true }
 })
 
 $minimize.Add_Click({ Set-Expanded $false })
@@ -197,13 +213,21 @@ $input.Add_KeyDown({
     }
 })
 
-# right-click either state -> quit
+# Right-click menu. "Open" exists so the panel is always reachable even if a mouse gesture misbehaves on
+# some trackpad configuration - a chat head you cannot open is worse than an ugly menu.
 $menu = New-Object System.Windows.Controls.ContextMenu
+$open = New-Object System.Windows.Controls.MenuItem
+$open.Header = "Open guide"
+$open.Add_Click({ Set-Expanded $true })
 $quit = New-Object System.Windows.Controls.MenuItem
 $quit.Header = "Quit"
 $quit.Add_Click({ $win.Close() })
+$menu.Items.Add($open) | Out-Null
 $menu.Items.Add($quit) | Out-Null
 $win.ContextMenu = $menu
+
+# double-click is the second way in
+$head.Add_MouseDoubleClick({ Set-Expanded $true })
 
 # start near the bottom-right, above the tray
 $screen = [System.Windows.SystemParameters]::WorkArea

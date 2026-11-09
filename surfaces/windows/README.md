@@ -43,9 +43,10 @@ powershell -ExecutionPolicy Bypass -File surfaces\windows\guide-window.ps1
 | action | result |
 |---|---|
 | click the bubble | the panel opens |
+| double-click the head | also opens it (same action) |
+| right-click the head | menu: **Open guide** · **Quit** |
 | drag the bubble | it moves — a drag is not a click |
 | **X** on the panel | **collapses to the bubble** (does not quit) |
-| right-click the bubble | Quit |
 | `Enter` in the box | send · `Shift+Enter` newline |
 
 Closing the panel leaves the bubble, because a chat head that vanishes when you close it is a bug.

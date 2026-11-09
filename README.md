@@ -32,6 +32,20 @@ git clone <owner>/hermes-skeleton.git ~/hermes-skeleton
 cd ~/hermes-skeleton
 ```
 
+### Seeing those files in Windows Explorer
+
+The repo lives in the **Linux** filesystem, which Explorer does not show by default. Four ways in:
+
+| | |
+|---|---|
+| Address bar | type `\\wsl.localhost\Ubuntu\home\<your-name>\` (older Windows: `\\wsl$\Ubuntu\...`) |
+| From Ubuntu | `explorer.exe .` — opens the current folder in Explorer |
+| Keep it | right-click the folder → **Pin to Quick access** |
+| Distro name | `wsl -l -v` — it may be `Ubuntu-24.04`, not just `Ubuntu` |
+
+Once there, `start.cmd` and `surfaces\windows\run-guide-window.cmd` are ordinary files you can
+double-click. **Keep the repo in WSL** — copying it to `C:\` makes git slow and line endings unhappy.
+
 ---
 
 ## Step 2 — Run the setup
@@ -112,6 +126,7 @@ instead of leaving you half-configured.
 | `Temporary failure in name resolution`, PyPI timeouts | DNS, or a broken IPv6 route | test `curl -4 https://files.pythonhosted.org/`; prefer IPv4 |
 | `bridge error` in the window | the bridge isn't running | `curl http://127.0.0.1:8765/health` in WSL |
 | bubble missing entirely | a PowerShell error, hidden by `-WindowStyle Hidden` | run `surfaces\windows\guide-window.ps1` from a terminal |
+| clicking the bubble does nothing | mouse gesture eaten by the drag logic | right-click it → **Open guide**, or double-click the head |
 
 **For the git 408 specifically** — the installer uses a partial clone (file contents fetched on demand),
 which a flaky link cannot finish. Clone it in full, then let the installer adopt the checkout:
