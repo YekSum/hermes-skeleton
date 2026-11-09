@@ -84,7 +84,7 @@ $head      = $win.FindName("Head")
 $panel     = $win.FindName("Panel")
 $transcript= $win.FindName("Transcript")
 $scroller  = $win.FindName("Scroller")
-$input     = $win.FindName("Input")
+$txtInput  = $win.FindName("Input")
 $send      = $win.FindName("Send")
 $status    = $win.FindName("Status")
 $minimize  = $win.FindName("Minimize")
@@ -104,7 +104,7 @@ function Set-Expanded([bool]$on) {
         if ($win.Left + 380 -gt $screen.Right) { $win.Left = $screen.Right - 390 }
         if ($win.Top + 540 -gt $screen.Bottom) { $win.Top = $screen.Bottom - 550 }
         $head.Visibility = "Collapsed"; $panel.Visibility = "Visible"
-        $input.Focus() | Out-Null
+        $txtInput.Focus() | Out-Null
     } else {
         $win.Width = 72; $win.Height = 72
         $panel.Visibility = "Collapsed"; $head.Visibility = "Visible"
@@ -154,10 +154,10 @@ $timer.Add_Tick({
 })
 
 function Send-Text {
-    $text = $input.Text.Trim()
+    $text = $txtInput.Text.Trim()
     if (-not $text -or $script:pending) { return }
     Add-Message "you" $text
-    $input.Clear()
+    $txtInput.Clear()
     $status.Text = "thinking…"
 
     $rs = [runspacefactory]::CreateRunspace(); $rs.Open()
@@ -207,9 +207,13 @@ $win.Add_MouseLeftButtonUp({
 
 $minimize.Add_Click({ Set-Expanded $false })
 $send.Add_Click({ Send-Text })
-$input.Add_KeyDown({
-    if ($_.Key -eq "Enter" -and -not $_.KeyboardDevice.Modifiers.HasFlag("Shift")) {
-        $_.Handled = $true; Send-Text
+$txtInput.Add_KeyDown({
+    # Enter sends, Shift+Enter is a newline. Compare enums: HasFlag("Shift") silently fails on a string
+    # argument, which is how this handler ended up doing nothing at all.
+    $shift = [System.Windows.Input.Keyboard]::Modifiers -band [System.Windows.Input.ModifierKeys]::Shift
+    if ($_.Key -eq [System.Windows.Input.Key]::Enter -and -not $shift) {
+        $_.Handled = $true
+        Send-Text
     }
 })
 
