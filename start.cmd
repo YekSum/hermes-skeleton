@@ -37,9 +37,34 @@ if not defined DISTRO (
 )
 echo        ok - %DISTRO%
 
-for /f "delims=" %%i in ('wsl.exe -d %DISTRO% wslpath -u "%~dp0" 2^>nul') do set "REPO=%%i"
+REM If this folder lives INSIDE the WSL filesystem, Explorer opens it as a UNC path
+REM (\\wsl.localhost\Ubuntu\home\... or the older \\wsl$\...). wslpath cannot translate those, which
+REM is why double-clicking from the WSL home used to fail with "could not map this folder".
+set "P=%~dp0"
+if /i "!P:~0,16!"=="\\wsl.localhost\" (
+    set "REST=!P:~16!"
+    for /f "tokens=1,* delims=\" %%a in ("!REST!") do (
+        set "DISTRO=%%a"
+        set "REPO=/%%b"
+    )
+    set "REPO=!REPO:\=/!"
+    echo        ok - WSL path %REPO%
+) else if /i "!P:~0,6!"=="\\wsl$\" (
+    set "REST=!P:~6!"
+    for /f "tokens=1,* delims=\" %%a in ("!REST!") do (
+        set "DISTRO=%%a"
+        set "REPO=/%%b"
+    )
+    set "REPO=!REPO:\=/!"
+    echo        ok - WSL path %REPO%
+) else (
+    for /f "delims=" %%i in ('wsl.exe -d %DISTRO% wslpath -u "%~dp0" 2^>nul') do set "REPO=%%i"
+    if defined REPO echo        ok - repo seen from WSL as %REPO%
+)
 if not defined REPO (
-    echo        X Could not map this folder into WSL. Is the repo on a Windows drive?
+    echo        X Could not work out the WSL path for this folder.
+    echo          If the repo is inside WSL, run these two commands in Ubuntu instead:
+    echo              cd ~/hermes-skeleton ^&^& ./setup.sh ^&^& ./bootstrap.sh --no-launch
     pause
     exit /b 1
 )

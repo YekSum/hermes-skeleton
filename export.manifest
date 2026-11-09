@@ -41,7 +41,7 @@ manual	profiles/research-engineer/SOUL.md	$HERMES_HOME/profiles/research-enginee
 # The public checks file is a 9-claim template; the live one is 66 machine claims.
 own	map/ecosystem-map.checks.yaml	-
 # The public skill is a redacted copy; the live one carries private context.
-manual	skills/hermes-ecosystem-ops/SKILL.md	$HERMES_HOME/skills/hermes-ecosystem-ops/SKILL.md
+own	skills/hermes-ecosystem-ops/SKILL.md	-
 
 # ── own: authored in this repo ──────────────────────────────────────────────
 own	README.md	-
